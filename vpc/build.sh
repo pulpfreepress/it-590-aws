@@ -26,9 +26,9 @@ deploy_vpc() {
 display_usage() {
     echo
     echo "-----------------------------------------------------------------------"
-    echo " Usage: `basename $0` -va | -oh vpc "
+    echo " Usage: `basename $0` []va | oh] vpc "
     echo "                                   "
-    echo " Example: ./build.sh -va vpc       # Deploy the VPC in region US-EAST-1"
+    echo " Example: ./build.sh va vpc       # Deploy the VPC in region US-EAST-1"
     echo "-----------------------------------------------------------------------"
 }
 
