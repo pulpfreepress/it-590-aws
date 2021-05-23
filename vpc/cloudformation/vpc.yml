@@ -1,5 +1,5 @@
 ---
-# First CloudFormation script
+# CloudFormation script
 # This script creates a VPC with two subnets in two different AZs
 
 AWSTemplateFormatVersion:       "2010-09-09"
@@ -117,14 +117,14 @@ Resources:
         Type:                   AWS::EC2::InternetGateway
         Properties:
           Tags:
-          - Key:              Name
-            Value:            !Join ['-', [!Ref VpcName, IGW]]
+          - Key:                Name
+            Value:              !Join ['-', [!Ref VpcName, IGW]]
 
     GWAttachment:
         Type:                   AWS::EC2::VPCGatewayAttachment
         Properties:
-          VpcId:              !Ref VPC
-          InternetGatewayId:  !Ref IGW
+          VpcId:                !Ref VPC
+          InternetGatewayId:    !Ref IGW
 
 
 
@@ -132,55 +132,55 @@ Resources:
     PublicSubnet1:
         Type:                   AWS::EC2::Subnet
         Properties:
-          VpcId:              !Ref VPC
-          AvailabilityZone:   !Join [ '', [!Ref 'AWS::Region', !Ref AvailabilityZone1]]
-          CidrBlock:          !Ref PublicSubnetCidrBlock1
+          VpcId:                !Ref VPC
+          AvailabilityZone:     !Join [ '', [!Ref 'AWS::Region', !Ref AvailabilityZone1]]
+          CidrBlock:            !Ref PublicSubnetCidrBlock1
           Tags:
-          - Key:              Name
-            Value:            !Join ['-', [!Ref 'AWS::StackName', sn, public, az, !Ref AvailabilityZone1 ]]
-          - Key:              Environment
-            Value:            !Ref Environment
+          - Key:                Name
+            Value:              !Join ['-', [!Ref 'AWS::StackName', sn, public, az, !Ref AvailabilityZone1 ]]
+          - Key:                Environment
+            Value:              !Ref Environment
 
 
     PrivateSubnet1:
         Type:                   AWS::EC2::Subnet
         Properties:
-          VpcId:              !Ref VPC
-          AvailabilityZone:   !Join [ '', [!Ref 'AWS::Region', !Ref AvailabilityZone1]]
-          CidrBlock:          !Ref PrivateSubnetCidrBlock11
+          VpcId:                !Ref VPC
+          AvailabilityZone:     !Join [ '', [!Ref 'AWS::Region', !Ref AvailabilityZone1]]
+          CidrBlock:            !Ref PrivateSubnetCidrBlock11
           Tags:
-          - Key:              Name
-            Value:            !Join ['-', [!Ref 'AWS::StackName', sn, private, az, !Ref AvailabilityZone1 ]]
-          - Key:              Environment
-            Value:            !Ref Environment
+          - Key:                Name
+            Value:              !Join ['-', [!Ref 'AWS::StackName', sn, private, az, !Ref AvailabilityZone1 ]]
+          - Key:                Environment
+            Value:              !Ref Environment
 
 
     PublicSubnet2:
         Type:                   AWS::EC2::Subnet
         Properties:
-          VpcId:              !Ref VPC
-          AvailabilityZone:   !Join [ '', [!Ref 'AWS::Region', !Ref AvailabilityZone2]]
-          CidrBlock:          !Ref PublicSubnetCidrBlock2
+          VpcId:                !Ref VPC
+          AvailabilityZone:     !Join [ '', [!Ref 'AWS::Region', !Ref AvailabilityZone2]]
+          CidrBlock:            !Ref PublicSubnetCidrBlock2
           Tags:
-          - Key:              Name
-            Value:            !Join ['-', [!Ref 'AWS::StackName', sn, public, az, !Ref AvailabilityZone2 ]]
-          - Key:              Environment
-            Value:            !Ref Environment
+          - Key:                Name
+            Value:              !Join ['-', [!Ref 'AWS::StackName', sn, public, az, !Ref AvailabilityZone2 ]]
+          - Key:                Environment
+            Value:              !Ref Environment
 
 
     PrivateSubnet2:
         Type:                   AWS::EC2::Subnet
         Properties:
-          VpcId:              !Ref VPC
-          AvailabilityZone:   !Join [ '', [!Ref 'AWS::Region', !Ref AvailabilityZone2]]
-          CidrBlock:          !Ref PrivateSubnetCidrBlock12
+          VpcId:                !Ref VPC
+          AvailabilityZone:     !Join [ '', [!Ref 'AWS::Region', !Ref AvailabilityZone2]]
+          CidrBlock:            !Ref PrivateSubnetCidrBlock12
           Tags:
-          - Key:              Name
-            Value:            !Join ['-', [!Ref 'AWS::StackName', sn, private, az, !Ref AvailabilityZone2 ]]
-          - Key:              Environment
-            Value:            !Ref Environment
+          - Key:                Name
+            Value:              !Join ['-', [!Ref 'AWS::StackName', sn, private, az, !Ref AvailabilityZone2 ]]
+          - Key:                Environment
+            Value:              !Ref Environment
 
-    # Public Route Table & Routes
+    # Public Route Table | Routes | Public Subnet Associations | Main Network ACL
     PublicRT:
       Type:                     AWS::EC2::RouteTable
       Properties:
@@ -198,9 +198,30 @@ Resources:
        Properties:
          RouteTableId:          !Ref PublicRT
          DestinationCidrBlock:  0.0.0.0/0
-         NatGatewayId:          !Ref NAT
+         GatewayId:             !Ref IGW
 
+    PublicSubnet1RTAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: !Ref PublicRT
+        SubnetId: !Ref PublicSubnet1
 
+    PublicSubnet2RTAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: !Ref PublicRT
+        SubnetId: !Ref PublicSubnet2
+
+    PublicNACL:
+      Type: AWS::EC2::NetworkAcl
+      Properties:
+         VpcId:
+           Ref: myVPC
+         Tags:
+         - Key: Name
+           Value: !Join ['-', [!Ref 'AWS::StackName', !Ref VpcName]]
+         - Key: Environment
+           Value: !Ref Environment
 
 
 
