@@ -11,5 +11,5 @@ This works fine for simple deployments but for most applications, you need more 
 
 # Custom VPC
 ------------
-Pictured below is a custom VPC that has both public and private subnets. A subnet is public if it accepts inbound traffic from the internet, and a subnet is private if it does not, or otherwise restricts inbound public traffic. A private subnet uses a NAT gateway to enable outbound traffic to the internet. To access resources within a private subnet, say an EC2 instance, you can use a bastion host or session manager. 
-<img src="diagrams/vpc/DefaultVPC.png"></img>
+Pictured below is a custom VPC that has both public and private subnets. A subnet is public if it accepts inbound traffic from the internet, and a subnet is private if it does not, or otherwise restricts inbound public traffic. A private subnet uses a NAT gateway to enable outbound traffic to the internet. To access resources within a private subnet, say an EC2 instance, you can use a bastion host or session manager.
+<img src="diagrams/vpc/CustomVPC.png"></img>
