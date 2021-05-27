@@ -10,6 +10,17 @@ This works fine for simple deployments but for most applications, you need more 
 
 
 # Custom VPC
-------------
+---------
 Pictured below is a custom VPC that has both public and private subnets. A subnet is public if it accepts inbound traffic from the internet, and a subnet is private if it does not, or otherwise restricts inbound public traffic. A private subnet uses a NAT gateway to enable outbound traffic to the internet. To access resources within a private subnet, say an EC2 instance, you can use a bastion host or session manager.
 <img src="diagrams/vpc/CustomVPC.png"></img>
+
+# Deploying the VPC
+---------
+The VPC CloudFormation template given in this project `vpc.yml` defines a custom VPC with two public and two private subnets, an Internet Gateway, NAT Gateway, NACL, RouteTables, Routes, and a Security Group that limits access to a known IP address. Feel free to customize as you see fit.
+
+  Install and configure AWS CLI
+  On Windows -- Install Git with Unix/Linux tools for access to bash shell
+  Edit `build.sh` and/or `vpc.yml` to customize deployment
+  You'll need to edit the SSH Security Group and change the IP address to your IP address 
+  Run `./build.sh` to get help
+  Run `./build.sh oh vpc` to deploy VPC in us-east-2

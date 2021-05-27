@@ -108,7 +108,7 @@ Resources:
             InstanceTenancy:              default
             Tags:
             - Key:                        Name
-              Value:                      !Join ['-', [!Ref 'AWS::StackName',!Ref VpcName, !Ref Environment ]]
+              Value:                      !Join ['-', [!Ref Environment, !Ref VpcName, VPC, !Ref "AWS::StackName", ]]
             - Key:                        Owner
               Value:                      !Ref Owner
             - Key:                        Project
@@ -148,7 +148,7 @@ Resources:
           MapPublicIpOnLaunch:            true
           Tags:
           - Key:                          Name
-            Value:                        !Join ['-', [!Ref 'AWS::StackName', sn, public, az, !Ref AvailabilityZone1 ]]
+            Value:                        !Join ['-', [!Ref Environment, sn, public, az, !Ref AvailabilityZone1, !Ref "AWS::StackName", ]]
           - Key:                          Environment
             Value:                        !Ref Environment
 
@@ -161,7 +161,7 @@ Resources:
           CidrBlock:                      !Ref PrivateSubnetCidrBlock11
           Tags:
           - Key:                          Name
-            Value:                        !Join ['-', [!Ref 'AWS::StackName', sn, private, az, !Ref AvailabilityZone1 ]]
+            Value:                        !Join ['-', [!Ref Environment, sn, private, az, !Ref AvailabilityZone1, !Ref "AWS::StackName", ]]
           - Key:                          Environment
             Value:                        !Ref Environment
 
@@ -175,7 +175,7 @@ Resources:
           MapPublicIpOnLaunch:            true
           Tags:
           - Key:                          Name
-            Value:                        !Join ['-', [!Ref 'AWS::StackName', sn, public, az, !Ref AvailabilityZone2 ]]
+            Value:                        !Join ['-', [!Ref Environment, sn, public, az, !Ref AvailabilityZone2, !Ref "AWS::StackName", ]]
           - Key:                          Environment
             Value:                        !Ref Environment
 
@@ -188,7 +188,7 @@ Resources:
           CidrBlock:                      !Ref PrivateSubnetCidrBlock12
           Tags:
           - Key:                          Name
-            Value:                        !Join ['-', [!Ref 'AWS::StackName', sn, private, az, !Ref AvailabilityZone2 ]]
+            Value:                        !Join ['-', [!Ref Environment, sn, private, az, !Ref AvailabilityZone2, !Ref "AWS::StackName", ]]
           - Key:                          Environment
             Value:                        !Ref Environment
 
@@ -201,7 +201,7 @@ Resources:
         - Key:                            Environment
           Value:                          !Ref Environment
         - Key:                            Name
-          Value:                          !Join ['-', [!Ref 'AWS::StackName', !Ref VpcName, public, RT]]
+          Value:                          !Join ['-', [!Ref Environment, public, RT, !Ref VpcName, !Ref "AWS::StackName",]]
         - Key:                            Network
           Value:                          public
 
@@ -234,7 +234,7 @@ Resources:
          VpcId:                           !Ref VPC
          Tags:
          - Key:                           Name
-           Value:                         !Join ['-', [!Ref 'AWS::StackName', !Ref VpcName]]
+           Value:                         !Join ['-', [!Ref Environment, !Ref VpcName, NACL, !Ref "AWS::StackName",]]
          - Key:                           Environment
            Value:                         !Ref Environment
 
@@ -292,7 +292,7 @@ Resources:
           - Key:                          Environment
             Value:                        !Ref Environment
           - Key:                          Name
-            Value:                        !Join ['-', [!Ref VpcName, NATGW]]
+            Value:                        !Join ['-', [!Ref Environment, !Ref VpcName, NATGW, !Ref "AWS::StackName",]]
 
     PrivateRouteTable:
         Type:                             AWS::EC2::RouteTable
@@ -300,7 +300,7 @@ Resources:
           VpcId:                          !Ref VPC
           Tags:
             - Key:                        Name
-              Value:                      !Join ['-', [!Ref "AWS::StackName", !Ref VpcName, Private, RT]]
+              Value:                      !Join ['-', [!Ref Environment, !Ref VpcName, Private, RT, !Ref "AWS::StackName",]]
             - Key:                        Network
               Value:                      Private
 
@@ -342,7 +342,15 @@ Resources:
             - Key:                        Environment
               Value:                      !Ref Environment
             - Key:                        Name
-              Value:                      !Join ['-', ["SSH Inbound Only", !Ref "AWS::StackName", !Ref VpcName, !Ref Environment]]
+              Value:                      !Join ['-', [!Ref Environment, !Ref VpcName, "SSH Inbound Only", !Ref "AWS::StackName",]]
 
 
-...
+
+#Stack Outputs
+Outputs:
+  VPCId:
+    Description:                          VPC ID
+    Value:                                !Ref VPC
+    Export:
+      #Name:                              !Sub "${AWS::StackName}-VPCID"
+      Name:                               !Join ["-", [!Ref Environment, !Ref "AWS::StackName", VPCID]]
