@@ -6,6 +6,7 @@ declare -r CLOUDFORMATION_DIR="cloudformation/"
 declare -r VPC_DF_TEMPLATE_FILE="vpc.yml"
 declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
+declare -r STACK_NAME="vpc-stack"
 
 declare _deployment_region=${REGION_VIRGINIA}
 
@@ -17,8 +18,9 @@ deploy_vpc() {
     echo "Deploying VPC"
     aws --region ${_deployment_region} cloudformation deploy \
         --template-file $CLOUDFORMATION_DIR$VPC_DF_TEMPLATE_FILE \
-        --stack-name vpc-stack \
+        --stack-name $STACK_NAME \
         --capabilities CAPABILITY_IAM \
+        --parameter-overrides "Owner=Your Name" "VpcName=TestVPC" \
         --debug
 }
 
