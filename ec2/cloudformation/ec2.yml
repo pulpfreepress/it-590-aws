@@ -1,0 +1,30 @@
+---
+# CloudFormation script
+# This script deploys two EC2 Linux instances, one in a public subnet and the other in a private subnet.
+
+AWSTemplateFormatVersion:                 "2010-09-09"
+Description:                              Deploy EC2 instances in public and private subnets of existing non-default VPC
+
+Metadata:
+  template metadata
+
+Parameters:
+  set of parameters
+
+Rules:
+  set of rules
+
+Mappings:
+  set of mappings
+
+Conditions:
+  set of conditions
+
+Transform:
+  set of transforms
+
+Resources:
+  set of resources
+
+Outputs:
+  set of outputs
