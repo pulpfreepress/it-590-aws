@@ -24,7 +24,7 @@ Parameters:
 
   VpcStackNameParameter:
     Type:                        String
-    Default:                     vpc-stack
+    Default:                     dev-vpc-stack
 
 
   KeyNameParameter:
@@ -79,7 +79,7 @@ Resources:
     Type:                        "AWS::IAM::Role"
     Properties:
       Description:               EC2 Role
-      RoleName:                  !Join ['-',[!Ref EnvironmentParameter, !Ref "AWS::StackName", EC2, Role]]
+      RoleName:                  !Join ['-',[!Ref "AWS::StackName", EC2, Role]]
       AssumeRolePolicyDocument:
         Version:                 "2012-10-17"
         Statement:
@@ -123,10 +123,11 @@ Resources:
     Properties:
       InstanceType:              !Ref InstanceTypeParameter
       SecurityGroupIds:
-        - Fn::ImportValue  !Sub '${!Ref EnvironmentParameter}-${!Ref VpcStackNameParameter}-DefaultSecurityGroup'
+        - Fn::ImportValue:       !Sub "${VpcStackNameParameter}-DefaultSecurityGroup"
       KeyName:                   !Ref KeyNameParameter
       ImageId:                   !Ref LatestAmiIdParameter
-      SubnetId:                  Fn::ImportValue !Sub '${!Ref EnvironmentParameter}-${!Ref VpcStackNameParameter}-PublicSubnet1'
+      SubnetId:
+        Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PublicSubnet1"
 
 
 
