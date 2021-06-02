@@ -8,9 +8,11 @@ declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="vpc-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
+declare -r STACK_OWNER="Rick Miller"
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
+declare _stack_name=${STACK_NAME}
 
 
 
@@ -20,9 +22,9 @@ deploy_vpc() {
     echo "Deploying VPC"
     aws --region ${_deployment_region} cloudformation deploy \
         --template-file $CLOUDFORMATION_DIR$VPC_CF_TEMPLATE_FILE \
-        --stack-name $_deployment_environment-$STACK_NAME \
+        --stack-name $_deployment_environment-$_stack_name \
         --capabilities CAPABILITY_IAM \
-        --parameter-overrides "OwnerParameter=Your Name" "VpcNameParameter=TestVPC" "EnvironmentParameter=${_deployment_environment}" \
+        --parameter-overrides "OwnerParameter=${STACK_OWNER}" "VpcNameParameter=${_deployment_environment}-VPC" "EnvironmentParameter=${_deployment_environment}" \
         --debug
 }
 
