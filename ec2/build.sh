@@ -3,10 +3,10 @@
 
 # Globals
 declare -r CLOUDFORMATION_DIR="cloudformation/"
-declare -r VPC_CF_TEMPLATE_FILE="vpc.yml"
+declare -r EC2_CF_TEMPLATE_FILE="ec2.yml"
 declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
-declare -r STACK_NAME="vpc-stack"
+declare -r STACK_NAME="ec2-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
 
 declare _deployment_region=${REGION_VIRGINIA}
@@ -16,13 +16,13 @@ declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
 
 
-deploy_vpc() {
-    echo "Deploying VPC"
+deploy_ec2() {
+    echo "Deploying EC2 instances..."
     aws --region ${_deployment_region} cloudformation deploy \
-        --template-file $CLOUDFORMATION_DIR$VPC_CF_TEMPLATE_FILE \
+        --template-file $CLOUDFORMATION_DIR$EC2_CF_TEMPLATE_FILE \
         --stack-name $_deployment_environment-$STACK_NAME \
         --capabilities CAPABILITY_IAM \
-        --parameter-overrides "OwnerParameter=Your Name" "VpcNameParameter=TestVPC" "EnvironmentParameter=${_deployment_environment}" \
+        --parameter-overrides "OwnerParameter=Your Name" "KeyNameParameter=it-590-ec2-key"\
         --debug
 }
 
@@ -30,9 +30,9 @@ deploy_vpc() {
 display_usage() {
     echo
     echo "-----------------------------------------------------------------------"
-    echo " Usage: `basename $0` [dev | test | prod ] [va | oh] vpc "
+    echo " Usage: `basename $0` [dev | test | prod] [va | oh] ec2 "
     echo "                                   "
-    echo " Example: ./build.sh dev va vpc       # Deploy a development VPC in region US-EAST-1"
+    echo " Example: ./build.sh test va ec2       # Deploy test environment ec2 instances in region US-EAST-1"
     echo "-----------------------------------------------------------------------"
 }
 
@@ -64,6 +64,7 @@ set_region() {
     esac
 }
 
+
 set_environment() {
   case $1 in
     dev)
@@ -71,15 +72,17 @@ set_environment() {
       echo "Deployment Environment = " ${_deployment_environment}
       ;;
 
-   test)
+    test)
      _deployment_environment="test"
      echo "Deployment Environment = " ${_deployment_environment}
      ;;
-   prod)
+
+    prod)
      _deployment_environment="prod"
      echo "Deployment Environment = " ${_deployment_environment}
      ;;
-   *)
+
+    *)
      _deployment_environment="dev"
      echo "Deployment Environment = " ${_deployment_environment}
      ;;
@@ -87,10 +90,12 @@ set_environment() {
 
 }
 
+
 deploy_cloudformation_script() {
     case $1 in
-        vpc)
-            deploy_vpc
+        ec2)
+            validate_template
+            deploy_ec2
             ;;
 
         *)
@@ -101,8 +106,8 @@ deploy_cloudformation_script() {
 
 
 validate_template(){
-    echo "Validating CF Template: " $CLOUDFORMATION_DIR$VPC_CF_TEMPLATE_FILE
-    aws cloudformation validate-template --template-body file://$CLOUDFORMATION_DIR$VPC_CF_TEMPLATE_FILE
+    echo "Validating CF Template: " $CLOUDFORMATION_DIR$EC2_CF_TEMPLATE_FILE
+    aws cloudformation validate-template --template-body file://$CLOUDFORMATION_DIR$EC2_CF_TEMPLATE_FILE
 }
 
 
