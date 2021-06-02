@@ -8,6 +8,7 @@ declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="ec2-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
+declare -r VPC_STACK_NAME="vpc-stack"
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
@@ -21,8 +22,8 @@ deploy_ec2() {
     aws --region ${_deployment_region} cloudformation deploy \
         --template-file $CLOUDFORMATION_DIR$EC2_CF_TEMPLATE_FILE \
         --stack-name $_deployment_environment-$STACK_NAME \
-        --capabilities CAPABILITY_IAM \
-        --parameter-overrides "OwnerParameter=Your Name" "KeyNameParameter=it-590-ec2-key"\
+        --capabilities CAPABILITY_NAMED_IAM \
+        --parameter-overrides "OwnerParameter=Your Name" "KeyNameParameter=it-590-ec2-key" "StackNameParameter=${VPC_STACK_NAME}"\
         --debug
 }
 
