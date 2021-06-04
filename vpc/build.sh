@@ -24,7 +24,9 @@ deploy_vpc() {
         --template-file $CLOUDFORMATION_DIR$VPC_CF_TEMPLATE_FILE \
         --stack-name $_deployment_environment-$_stack_name \
         --capabilities CAPABILITY_IAM \
-        --parameter-overrides "OwnerParameter=${STACK_OWNER}" "VpcNameParameter=${_deployment_environment}-VPC" "EnvironmentParameter=${_deployment_environment}" \
+        --parameter-overrides "OwnerParameter=${STACK_OWNER}" \
+                              "VpcNameParameter=${_deployment_environment}-VPC" \
+                              "EnvironmentParameter=${_deployment_environment}" \
         --debug
 }
 
