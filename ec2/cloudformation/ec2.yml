@@ -112,7 +112,7 @@ Resources:
   LinuxServerInstanceProfile:
     Type:                        AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName:       LinuxServerInstanceProfile
+      InstanceProfileName:       !Join ['-', [!Ref EnvironmentParameter, LinuxServerInstanceProfile]]
       Roles:
         - !Ref EC2Role
 

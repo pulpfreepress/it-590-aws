@@ -8,7 +8,7 @@ declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="ec2-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
-declare -r VPC_STACK_NAME="dev-vpc-stack"
+declare -r VPC_STACK_NAME="vpc-stack"
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
@@ -19,12 +19,14 @@ declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
 deploy_ec2() {
     echo "Deploying EC2 instances..."
-    validate_template
     aws --region ${_deployment_region} cloudformation deploy \
         --template-file $CLOUDFORMATION_DIR$EC2_CF_TEMPLATE_FILE \
         --stack-name $_deployment_environment-$STACK_NAME \
         --capabilities CAPABILITY_NAMED_IAM \
-        --parameter-overrides "OwnerParameter=Your Name" "KeyNameParameter=it-590-ec2-key" "VpcStackNameParameter=${VPC_STACK_NAME}"\
+        --parameter-overrides "OwnerParameter=Your Name" \
+                              "KeyNameParameter=it-590-ec2-key" \
+                              "VpcStackNameParameter=${_deployment_environment}-${VPC_STACK_NAME}" \
+                              "EnvironmentParameter=${_deployment_environment}" \
         --debug
 }
 
