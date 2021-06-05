@@ -17,3 +17,9 @@ Search the list of exports for **dev-ec2-stack-LinuxServerOnePublicDNS** or **de
 Open a browser and either enter the full server DNS or IP address. You should see the Apache Test page.
 
 <img src="diagrams/ApacheTestPage.png"></img>
+
+## PHP Info Page
+
+Add `/phpinfo.php` to the web page URL to access the PHP Info Page:
+
+<img src="diagrams/PHPInfoPage.png"></img>
