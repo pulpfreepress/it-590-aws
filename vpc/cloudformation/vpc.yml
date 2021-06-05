@@ -328,7 +328,7 @@ Resources:
         Type:                             AWS::EC2::SecurityGroup
         Properties:
           GroupDescription:               Restrict SSH from known IP address
-          GroupName:                      String
+          GroupName:                      SSHOnlyFromHome
           VpcId:                          !Ref VPC
           SecurityGroupIngress:
             - IpProtocol:                 tcp
