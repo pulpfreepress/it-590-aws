@@ -1,0 +1,77 @@
+---
+# CloudFormation script
+# This script deploys an Elastic File System (EFS) for the web server share in the non-default VPC with Mount Targets in each public subnet.
+# NOTE: Depends on the non-default VPC
+
+AWSTemplateFormatVersion:        "2010-09-09"
+Description:                     EFS Web Server Share
+
+Parameters:
+
+  OwnerParameter:
+    Type:                        String
+    Default:                     Your Name
+
+  EnvironmentParameter:
+    Type:                        String
+    Default:                     dev
+    AllowedValues:
+    - dev
+    - prod
+    - test
+
+  VpcStackNameParameter:
+    Type:                        String
+    Default:                     dev-vpc-stack
+
+
+Resources:
+
+  # Elastic File System (EFS)
+  WebFileShare:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: True
+      FileSystemTags:
+        - Key: Environment
+          Value: !Ref EnvironmentParameter
+        - Key: Purpose
+          Value: Web Server File Share
+
+  WebFileShareMountTargetSubnet1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref WebFileShare
+      SecurityGroups:
+        - Fn::ImportValue: !Sub "${VpcStackNameParameter}-DefaultSecurityGroup"
+      SubnetId:
+        Fn::ImportValue: !Sub "${VpcStackNameParameter}-PublicSubnet1"
+
+  WebFileShareMountTargetSubnet2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref WebFileShare
+      SecurityGroups:
+        - Fn::ImportValue: !Sub "${VpcStackNameParameter}-DefaultSecurityGroup"
+      SubnetId:
+        Fn::ImportValue: !Sub "${VpcStackNameParameter}-PublicSubnet2"
+
+
+
+
+Outputs:
+  EFSWebShare:
+    Description:                 EFS Web Share
+    Value:                       !Ref WebFileShare
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", WebFileShare]]
+  EFSWebShareMountTargetOne:
+    Description: EFS Mount Target One
+    Value:  !Ref WebFileShareMountTargetSubnet1
+    Export:
+      Name: !Join ['-', [!Ref "AWS::StackName", WebShareMountTargetOne]]
+  EFSWebShareMountTargetTwo:
+    Description: EFS Mount Target Two
+    Value:  !Ref WebFileShareMountTargetSubnet2
+    Export:
+      Name: !Join ['-', [!Ref "AWS::StackName", WebShareMountTargetTwo]]
