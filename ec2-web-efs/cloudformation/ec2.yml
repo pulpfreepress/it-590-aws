@@ -28,13 +28,13 @@ Parameters:
 
   # Future Use
   EFSStackNameParameter:
-    Type: String
-    Default: dev-efs-stack
+    Type:                        String
+    Default:                     dev-efs-stack
 
   # MUST provide parameter override
   EFSWebFileShareParameter:
-    Type: String
-    Default: fs-000000
+    Type:                        String
+    Default:                     fs-000000
 
   KeyNameParameter:
     Description:                 Name of an existing EC2 KeyPair to enable SSH access to the instance
