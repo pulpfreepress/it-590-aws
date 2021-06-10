@@ -10,6 +10,7 @@ declare -r STACK_NAME="ec2-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
 declare -r VPC_STACK_NAME="vpc-stack"
 declare -r EFS_STACK_NAME="efs-stack"
+declare -r EFS_WEB_FILE_SHARE="fs-dc7981a7"
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
@@ -28,7 +29,7 @@ deploy_ec2() {
                               "KeyNameParameter=it-590-ec2-key" \
                               "VpcStackNameParameter=${_deployment_environment}-${VPC_STACK_NAME}" \
                               "EnvironmentParameter=${_deployment_environment}" \
-                              "EFSStackNameParameter=$_deployment_environment}-${EFS_STACK_NAME}" \
+                              "EFSWebFileShareParameter=${EFS_WEB_FILE_SHARE}" \
         --debug
 }
 

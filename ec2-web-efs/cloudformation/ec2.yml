@@ -26,13 +26,15 @@ Parameters:
     Type:                        String
     Default:                     dev-vpc-stack
 
+  # Future Use
   EFSStackNameParameter:
     Type: String
     Default: dev-efs-stack
 
-  EFSWebShare:
+  # MUST provide parameter override
+  EFSWebFileShareParameter:
     Type: String
-    Default: dev-efs-stack-WebFileShare
+    Default: fs-000000
 
   KeyNameParameter:
     Description:                 Name of an existing EC2 KeyPair to enable SSH access to the instance
@@ -168,30 +170,28 @@ Resources:
       SubnetId:
         Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PublicSubnet1"
       UserData:
-        !Base64 |
-        #!/bin/bash
-        yum update -y
-        amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
-        yum install -y httpd
-        mkdir /webshare
-        mkdir /webshare/www
-        mkdir /webshare/www/html
-        !Sub "mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebShare}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html"
-        sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
-        systemctl start httpd
-        systemctl enable httpd
-        usermod -a -G apache ec2-user
-        chown -R ec2-user:apache /webshare/www/html
-        chmod 2775 /webshare/www/html
-        find /webshare/www/html -type d -exec chmod 2775 {} \;
-        find /webshare/www/html -type f -exec chmod 0664 {} \;
-        echo "<?php phpinfo(); ?>" > /webshare/www/html/phpinfo.php
-
-        #chown -R ec2-user:apache /var/www
-        #chmod 2775 /var/www
-        #find /var/www -type d -exec chmod 2775 {} \;
-        #find /var/www -type f -exec chmod 0664 {} \;
-        #echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
+        Fn::Base64:
+          !Sub |
+          #!/bin/bash
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          yum update -y
+          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          yum install -y httpd
+          mkdir /webshare
+          mkdir /webshare/www
+          mkdir /webshare/www/html
+          mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebFileShareParameter}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html
+          sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
+          systemctl start httpd
+          systemctl enable httpd
+          usermod -a -G apache ec2-user
+          chown -R ec2-user:apache /webshare/www/html
+          chmod 2775 /webshare/www/html
+          find /webshare/www/html -type d -exec chmod 2775 {} \;
+          find /webshare/www/html -type f -exec chmod 0664 {} \;
+          if [ ! -f /webshare/www/html/phpinfo.php ]; then
+            echo "<?php phpinfo(); ?>" > /webshare/www/html/phpinfo.php
+          fi
       Tags:
         - Key:                   Environment
           Value:                 !Ref EnvironmentParameter
@@ -199,6 +199,48 @@ Resources:
           Value:                 Web
         - Key:                   Name
           Value:                 !Join ['-', [!Ref EnvironmentParameter, LinuxWebServer1]]
+
+  LinuxServer2:
+    Type:                        AWS::EC2::Instance
+    Properties:
+      InstanceType:              !Ref InstanceTypeParameter
+      SecurityGroupIds:
+        - Fn::ImportValue:       !Sub "${VpcStackNameParameter}-DefaultSecurityGroup"
+        - !Ref WebLayerSecurityGroup
+      KeyName:                   !Ref KeyNameParameter
+      ImageId:                   !Ref LatestAmiIdParameter
+      SubnetId:
+        Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PublicSubnet2"
+      UserData:
+        Fn::Base64:
+          !Sub |
+          #!/bin/bash
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          yum update -y
+          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          yum install -y httpd
+          mkdir /webshare
+          mkdir /webshare/www
+          mkdir /webshare/www/html
+          mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebFileShareParameter}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html
+          sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
+          systemctl start httpd
+          systemctl enable httpd
+          usermod -a -G apache ec2-user
+          chown -R ec2-user:apache /webshare/www/html
+          chmod 2775 /webshare/www/html
+          find /webshare/www/html -type d -exec chmod 2775 {} \;
+          find /webshare/www/html -type f -exec chmod 0664 {} \;
+          if [ ! -f /webshare/www/html/phpinfo.php ]; then
+            echo "<?php phpinfo(); ?>" > /webshare/www/html/phpinfo.php
+          fi
+      Tags:
+        - Key:                   Environment
+          Value:                 !Ref EnvironmentParameter
+        - Key:                   Group
+          Value:                 Web
+        - Key:                   Name
+          Value:                 !Join ['-', [!Ref EnvironmentParameter, LinuxWebServer2]]
 
 
 
@@ -208,18 +250,38 @@ Outputs:
     Value:                       !Ref LinuxServer1
     Export:
       Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerOne]]
+  LinuxServerTwoId:
+    Description:                 InstanceId of the newly created EC2 instance
+    Value:                       !Ref LinuxServer2
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerTwo]]
   LinuxServerOneAZ:
     Description:                 Availability Zone of the newly created EC2 instance
     Value:                       !GetAtt [LinuxServer1, AvailabilityZone]
     Export:
       Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerOneAZ]]
+  LinuxServerTwoAZ:
+    Description:                 Availability Zone of the newly created EC2 instance
+    Value:                       !GetAtt [LinuxServer2, AvailabilityZone]
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerTwoAZ]]
   LinuxServerOnePublicDNS:
     Description:                 Public DNSName of the newly created EC2 instance
     Value:                       !GetAtt [LinuxServer1, PublicDnsName]
     Export:
       Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerOnePublicDNS]]
+  LinuxServerTwoPublicDNS:
+    Description:                 Public DNSName of the newly created EC2 instance
+    Value:                       !GetAtt [LinuxServer2, PublicDnsName]
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerTwoPublicDNS]]
   LinuxServerOnePublicIP:
     Description:                 Public IP address of the newly created EC2 instance
     Value:                       !GetAtt [LinuxServer1, PublicIp]
     Export:
       Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerOnePublicIP]]
+  LinuxServerTwoPublicIP:
+    Description:                 Public IP address of the newly created EC2 instance
+    Value:                       !GetAtt [LinuxServer2, PublicIp]
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerTwoPublicIP]]
