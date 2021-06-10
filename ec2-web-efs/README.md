@@ -14,14 +14,14 @@ From the command line run `aws cloudformation list-exports` and verify the efs s
 
 <img src="diagrams/AWSExports.png"></img>
 
-You can then run the following command to automatically extract the EFS file system (fs) ID from the list of exports: `aws cloudformation list-exports --query "Exports [?contains(Name,'WebFileShare')].Value" --output text` You should see an output in the form: fs-00000000 (Example: fs-075ca47c). The --query parameter uses the JAMESPath JSON query language. Click to learn more about <a href="https://jmespath.org">JAMESPath</a>
+You can then run the following command to extract the EFS file system (fs) ID from the list of exports: `aws cloudformation list-exports --query "Exports [?contains(Name,'WebFileShare')].Value" --output text` You should see an output in the form: fs-00000000 (Example: fs-075ca47c). The --query parameter uses the JAMESPath JSON query language. Click to learn more about <a href="https://jmespath.org">JAMESPath</a>
 
-The <a href="../ec2-web-efs>ec2-web-efs</a> project's build.sh script automatically extracts the WebFileShare FS value from the list of stack exports.
+The <a href="../ec2-web-efs">ec2-web-efs</a> project's `build.sh` script *automatically* extracts the WebFileShare FS value from the list of stack exports.
 From the command line run `./build.sh dev oh ec2` to deploy the ec2 dev stack into us-east-2. When the deployment script successfully completes, run `aws cloudformation list-exports` to list all stack exports. You output should be similar to, but not exactly as the following:
 
 <img src="diagrams/AWSExports2.png"></img>
 
-## Ping the Instance
+## Ping the Instances
 Search the list of exports for **dev-ec2-stack-LinuxServerOnePublicDNS** or **dev-ec2-stack-LinuxServerOnePublicIP** and copy the Value. Examples:
 `ping ec2-3-137-222-192.us-east-2.compute.amazonaws.com` or `ping 3.137.222.192` You should see responses from the server as shown below:
 
