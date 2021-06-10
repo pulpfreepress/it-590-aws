@@ -344,7 +344,15 @@ Resources:
             - Key:                        Name
               Value:                      !Join ['-', [!Ref EnvironmentParameter, !Ref VpcNameParameter, "SSH Inbound Only", !Ref "AWS::StackName",]]
 
-
+    NFSSgIngress:
+        Type: AWS::EC2::SecurityGroupIngress
+        Properties:
+          IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          GroupId: !Ref DefaultSecurityGroup
+          SourceSecurityGroupId: !Ref DefaultSecurityGroup
+          
 
 #Stack Outputs
 Outputs:
