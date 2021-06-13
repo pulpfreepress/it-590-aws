@@ -117,37 +117,12 @@ Resources:
           - Key: Environment
             Value: !Ref EnvironmentParameter
 
-
-
-  # RestAPIStage:
-  #   Type: AWS::ApiGateway::Stage
-  #   Properties:
-  #     StageName: !Ref EnvironmentParameter
-  #     DeploymentId: !Ref RestAPIDeployment
-  #     Description: !Join ['-', [!Ref EnvironmentParameter, !Ref RestAPI, Stage ]]
-  #     RestApiId: !Ref RestAPI
-  #     TracingEnabled: True
-  #     MethodSettings:
-  #       - HttpMethod: GET
-  #         ResourcePath: '/*'
-  #         DataTraceEnabled: True
-  #         LoggingLevel: INFO
-  #         MetricsEnabled: False
-  #     Tags:
-  #       - Key: Environment
-  #         Value: !Ref EnvironmentParameter
-
-
-
   RestAPILambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref EchoFunction
       Principal: '*'
-      # SourceAccount: !Ref AWS::AccountId
-      # SourceArn: String
-
 
   # Functions
   EchoFunction:
@@ -166,7 +141,7 @@ Resources:
           sqs_queue:               message_queue
           sns_topic:               message_topic
 
-
+# Outputs
 Outputs:
   EchoApi:
     Description:          "API Gateway endpoint URL for Prod stage for echo function"
