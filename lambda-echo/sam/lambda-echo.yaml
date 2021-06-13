@@ -37,6 +37,32 @@ Globals:
 
 # Resources
 Resources:
+  # Roles
+  APIGatewayCloudWatchLoggingRole:
+    Type:                       AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version:                2012-10-17
+        Statement:
+          - Effect:             Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:             sts:AssumeRole
+      Path:                     /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+
+  Account:
+    Type:                       AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn:        !GetAtt
+        - APIGatewayCloudWatchLoggingRole
+        - Arn
+
+
+
+  # Functions
   EchoFunction:
     Type:                 AWS::Serverless::Function
     Properties:
@@ -53,7 +79,7 @@ Resources:
           Type:             Api
           Properties:
             Path:           /echo
-            Method:         get
+            Method:         any
       Environment:
         Variables:
           sqs_queue:        message_queue
@@ -63,7 +89,7 @@ Resources:
 Outputs:
   EchoApi:
     Description:          "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value:                !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/echo/"
+    Value:                !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/echo?message=This works!"
   EchoFunction:
     Description:          "Hello World Lambda Function ARN"
     Value:                !GetAtt EchoFunction.Arn

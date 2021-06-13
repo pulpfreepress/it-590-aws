@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion:          '2010-09-09'
+Transform:                         AWS::Serverless-2016-10-31
+Description:                       Deploys an AWS Lambda function that echos the string passed via an API call.
+
+# Parameters
+Parameters:
+  EnvironmentParameter:
+    Type:                          String
+    Default:                       dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+  POCNameParameter:
+    Type:                          String
+    Default:                       Your Name
+
+
+# # Global Values -- These are applied to all resources
+Globals:
+  Function:
+    Tags:
+      POCName:                     !Ref POCNameParameter
+      Environment:                 !Ref EnvironmentParameter
+
+
+
+# Metadata:
+#   template metadata
+#
+# Mappings:
+#   set of mappings
+#
+# Conditions:
+#   set of conditions
+
+# Resources
+Resources:
+  # Roles
+  APIGatewayCloudWatchLoggingRole:
+    Type:                          AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version:                   2012-10-17
+        Statement:
+          - Effect:                Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:                sts:AssumeRole
+      Path:                        /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+
+  Account:
+    Type:                          AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn:           !GetAtt
+        - APIGatewayCloudWatchLoggingRole
+        - Arn
+
+
+  # Rest API
+  RestAPI:
+    Type:                          AWS::ApiGateway::RestApi
+    Properties:
+      Name:                        !Join ['-', [!Ref EnvironmentParameter, RestAPI]]
+      Description:                 !Join ['-',[!Ref EnvironmentParameter, RestAPI]]
+      DisableExecuteApiEndpoint:   False
+      FailOnWarnings:              True
+      Tags:
+        - Key:                     Environment
+          Value:                   !Ref EnvironmentParameter
+
+
+  RestAPIResource:
+    Type:                          AWS::ApiGateway::Resource
+    Properties:
+      ParentId:                    !GetAtt RestAPI.RootResourceId
+      PathPart:                    echo
+      RestApiId:                   !Ref RestAPI
+
+  RestAPIEchoMethod:
+    Type:                          AWS::ApiGateway::Method
+    Properties:
+      HttpMethod:                  ANY
+      AuthorizationType:           NONE
+      Integration:
+        Type:                      AWS_PROXY
+        Uri:  !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentParameter}-EchoFunction/invocations"
+        IntegrationHttpMethod:     POST
+      ResourceId:                  !Ref RestAPIResource
+      RestApiId:                   !Ref RestAPI
+
+  RestAPIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - RestAPIEchoMethod
+    Properties:
+      Description: !Join ['-', [!Ref EnvironmentParameter, !Ref RestAPI, Deployment ]]
+      RestApiId: !Ref RestAPI
+      StageName: !Ref EnvironmentParameter
+      StageDescription:
+        DataTraceEnabled: True
+        Description: !Join ['-', [!Ref EnvironmentParameter, !Ref RestAPI, Stage ]]
+        LoggingLevel: INFO
+        MetricsEnabled: True
+        TracingEnabled: True
+        MethodSettings:
+          - HttpMethod: '*'
+            ResourcePath: '/*'
+            DataTraceEnabled: True
+            LoggingLevel: INFO
+            MetricsEnabled: False
+        Tags:
+          - Key: Environment
+            Value: !Ref EnvironmentParameter
+
+
+
+  # RestAPIStage:
+  #   Type: AWS::ApiGateway::Stage
+  #   Properties:
+  #     StageName: !Ref EnvironmentParameter
+  #     DeploymentId: !Ref RestAPIDeployment
+  #     Description: !Join ['-', [!Ref EnvironmentParameter, !Ref RestAPI, Stage ]]
+  #     RestApiId: !Ref RestAPI
+  #     TracingEnabled: True
+  #     MethodSettings:
+  #       - HttpMethod: GET
+  #         ResourcePath: '/*'
+  #         DataTraceEnabled: True
+  #         LoggingLevel: INFO
+  #         MetricsEnabled: False
+  #     Tags:
+  #       - Key: Environment
+  #         Value: !Ref EnvironmentParameter
+
+
+
+  RestAPILambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref EchoFunction
+      Principal: '*'
+      # SourceAccount: !Ref AWS::AccountId
+      # SourceArn: String
+
+
+  # Functions
+  EchoFunction:
+    Type:                          AWS::Serverless::Function
+    Properties:
+      FunctionName:                !Join ['-', [!Ref EnvironmentParameter, EchoFunction]]
+      Handler:                     echo.lambda_handler
+      Runtime:                     python3.8
+      CodeUri:                     echo.zip
+      Tracing:                     Active
+      Timeout:                     15
+      Policies:
+        - AWSLambdaExecute
+      Environment:
+        Variables:
+          sqs_queue:               message_queue
+          sns_topic:               message_topic
+
+
+Outputs:
+  EchoApi:
+    Description:          "API Gateway endpoint URL for Prod stage for echo function"
+    Value:                !Sub "https://${RestAPI}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentParameter}/echo?message=This works!"
+  EchoFunction:
+    Description:                   "Hello World Lambda Function ARN"
+    Value:                         !GetAtt EchoFunction.Arn
+  EchoFunctionIamRole:
+    Description:                   "Implicit IAM Role created for Hello World function"
+    Value:                         !GetAtt EchoFunctionRole.Arn

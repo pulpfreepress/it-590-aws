@@ -31,7 +31,7 @@ Resources:
           - EchoFunction
       Handler: echo.lambda_handler
       Runtime: python3.8
-      CodeUri: s3://deployment-it590-us-east-2/sam/d7a21bb63aad3a2f464f6d1aaaf6c263
+      CodeUri: s3://deployment-it590-us-east-2/sam/320f49387467e31ae93b5c749767e05c
       Tracing: Active
       Timeout: 15
       Policies:
@@ -41,7 +41,7 @@ Resources:
           Type: Api
           Properties:
             Path: /echo
-            Method: get
+            Method: any
       Environment:
         Variables:
           sqs_queue: message_queue
