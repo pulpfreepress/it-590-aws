@@ -1,2 +1,7 @@
+# Directories
+.venv
+
+
+
 # Files
 .DS_Store
