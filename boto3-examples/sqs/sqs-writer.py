@@ -15,7 +15,7 @@ def write_message(message):
     try:
         response = queue.send_message(MessageBody=message, DelaySeconds=0,)
         print('"' + message + '"' + ' written to ' + queue_name)
-        print('Response: ' + str(response))
+        print('Response: ' + json.dumps(response))
     except Exception as e:
         print(str(e))
 
