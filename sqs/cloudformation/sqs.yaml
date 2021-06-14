@@ -1,0 +1,50 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description:              Stand up an SQS Queue in the default VPC
+
+
+Parameters:
+  EnvironmentParameter:
+    Type:                 String
+    Default:              dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+
+  QueueNameParameter:
+    Type:                 String
+    Default:              QueueOne
+
+
+
+Resources:
+  SqsQueueOne:
+    Type:                 AWS::SQS::Queue
+    Properties:
+      QueueName:            !Join ['-', [!Ref EnvironmentParameter, !Ref QueueNameParameter]]
+      Tags:
+        - Key:              Environment
+          Value:            EnvironmentParameter
+
+
+
+
+Outputs:
+  SqsQueueOneURL:
+    Description:          SqsQueueOne URL
+    Value:                !Ref SqsQueueOne
+    Export:
+      Name:               !Join ['-', [!Ref "AWS::StackName", !Ref QueueNameParameter, URL]]
+  QueueARN:
+    Description:          SqsQueueOne Arn
+    Value:                !GetAtt SqsQueueOne.Arn
+    Export:
+      Name:               !Join ['-', [!Ref "AWS::StackName", !Ref QueueNameParameter, Arn]]
+  QueueName:
+    Description:          "SqsQueueOne Name"
+    Value:                !GetAtt SqsQueueOne.QueueName
+    Export:
+      Name:               !Join ['-', [!Ref "AWS::StackName", !Ref QueueNameParameter, Name]]
