@@ -5,3 +5,4 @@ build
 
 # Files
 .DS_Store
+*.zip
