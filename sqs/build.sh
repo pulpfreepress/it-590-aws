@@ -19,7 +19,7 @@ declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
 
 deploy_sqs() {
-    echo "Deploying EFS stack"
+    echo "Deploying SQS stack"
     aws --region ${_deployment_region} cloudformation deploy \
         --template-file ${CLOUDFORMATION_DIR}/${SQS_CF_TEMPLATE_FILE} \
         --stack-name ${_deployment_environment}-${STACK_NAME} \

@@ -2,7 +2,7 @@
 
 
 # Globals
-declare -r CLOUDFORMATION_DIR="cloudformation/"
+declare -r CLOUDFORMATION_DIR="cloudformation"
 declare -r EC2_CF_TEMPLATE_FILE="ec2.yml"
 declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
@@ -21,8 +21,8 @@ declare _efs_web_file_share=$(aws cloudformation list-exports --query "Exports [
 deploy_ec2() {
     echo "Deploying EC2 instances..."
     aws --region ${_deployment_region} cloudformation deploy \
-        --template-file $CLOUDFORMATION_DIR$EC2_CF_TEMPLATE_FILE \
-        --stack-name $_deployment_environment-$STACK_NAME \
+        --template-file ${CLOUDFORMATION_DIR}/${EC2_CF_TEMPLATE_FILE} \
+        --stack-name ${_deployment_environment}-${STACK_NAME} \
         --capabilities CAPABILITY_NAMED_IAM \
         --parameter-overrides "OwnerParameter=Your Name" \
                               "KeyNameParameter=it-590-ec2-key" \
@@ -114,8 +114,8 @@ deploy_cloudformation_script() {
 
 
 validate_template(){
-    echo "Validating CF Template: " $CLOUDFORMATION_DIR$EC2_CF_TEMPLATE_FILE
-    aws cloudformation validate-template --template-body file://$CLOUDFORMATION_DIR$EC2_CF_TEMPLATE_FILE
+    echo "Validating CF Template: " ${CLOUDFORMATION_DIR}/${EC2_CF_TEMPLATE_FILE}
+    aws cloudformation validate-template --template-body file://${CLOUDFORMATION_DIR}/${EC2_CF_TEMPLATE_FILE}
 }
 
 

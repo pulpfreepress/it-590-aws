@@ -1,0 +1,55 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Example Simple Notification Service Topic and Subscription
+
+
+Parameters:
+  SnsTopicNameParameter:
+    Type: String
+    Default: MessageTopic
+
+  POCNameParameter:
+    Type: String
+    Default: Your Name
+
+  EnvironmentParameter:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+  SubscriptionEmailParameter:
+    Type: String
+    Default: rick@warrenworks.com
+
+
+Resources:
+  SnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Join ['-', [!Ref EnvironmentParameter, !Ref SnsTopicNameParameter]]
+      DisplayName: !Join ['-', [!Ref EnvironmentParameter, !Ref SnsTopicNameParameter]]
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentParameter
+        - Key: POC
+          Value: !Ref POCNameParameter
+
+  EmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: !Ref SubscriptionEmailParameter
+      TopicArn: !Ref SnsTopic
+
+
+
+
+Outputs:
+  SnsTopicName:
+    Description:          Sns Topic Name
+    Value:                !GetAtt SnsTopic.TopicName
+    Export:
+      Name:               !Join ['-', [!Ref "AWS::StackName", !Ref SnsTopicNameParameter]]
