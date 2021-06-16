@@ -1,2 +1,5 @@
-# ignore build directory
-**/build/
+# Directories
+build
+
+# Files
+*.zip
