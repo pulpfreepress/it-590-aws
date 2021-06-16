@@ -3,7 +3,7 @@
 
 # Globals
 declare -r CLOUDFORMATION_DIR="cloudformation"
-declare -r EC2_CF_TEMPLATE_FILE="ec2.yml"
+declare -r EC2_CF_TEMPLATE_FILE="ec2.yaml"
 declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="ec2-stack"

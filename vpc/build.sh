@@ -2,8 +2,8 @@
 
 
 # Globals
-declare -r CLOUDFORMATION_DIR="cloudformation/"
-declare -r VPC_CF_TEMPLATE_FILE="vpc.yml"
+declare -r CLOUDFORMATION_DIR="cloudformation"
+declare -r VPC_CF_TEMPLATE_FILE="vpc.yaml"
 declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="vpc-stack"
@@ -21,8 +21,8 @@ declare _stack_name=${STACK_NAME}
 deploy_vpc() {
     echo "Deploying VPC"
     aws --region ${_deployment_region} cloudformation deploy \
-        --template-file $CLOUDFORMATION_DIR$VPC_CF_TEMPLATE_FILE \
-        --stack-name $_deployment_environment-$_stack_name \
+        --template-file ${CLOUDFORMATION_DIR}/${VPC_CF_TEMPLATE_FILE} \
+        --stack-name ${_deployment_environment}-${_stack_name} \
         --capabilities CAPABILITY_IAM \
         --parameter-overrides "OwnerParameter=${STACK_OWNER}" \
                               "VpcNameParameter=${_deployment_environment}-VPC" \
@@ -105,8 +105,8 @@ deploy_cloudformation_script() {
 
 
 validate_template(){
-    echo "Validating CF Template: " $CLOUDFORMATION_DIR$VPC_CF_TEMPLATE_FILE
-    aws cloudformation validate-template --template-body file://$CLOUDFORMATION_DIR$VPC_CF_TEMPLATE_FILE
+    echo "Validating CF Template: " ${CLOUDFORMATION_DIR}/${VPC_CF_TEMPLATE_FILE}
+    aws cloudformation validate-template --template-body file://${CLOUDFORMATION_DIR}/${VPC_CF_TEMPLATE_FILE}
 }
 
 

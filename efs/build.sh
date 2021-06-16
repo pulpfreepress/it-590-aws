@@ -3,7 +3,7 @@
 
 # Globals
 declare -r CLOUDFORMATION_DIR="cloudformation"
-declare -r EFS_CF_TEMPLATE_FILE="efs.yml"
+declare -r EFS_CF_TEMPLATE_FILE="efs.yaml"
 declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="efs-stack"
@@ -109,7 +109,7 @@ deploy_cloudformation_script() {
 
 validate_template(){
     echo "Validating CF Template: " ${CLOUDFORMATION_DIR}/${EFS_CF_TEMPLATE_FILE}
-    aws cloudformation validate-template --template-body file://${CLOUDFORMATION_DIR}${EFS_CF_TEMPLATE_FILE}
+    aws cloudformation validate-template --template-body file://${CLOUDFORMATION_DIR}/${EFS_CF_TEMPLATE_FILE}
 }
 
 
