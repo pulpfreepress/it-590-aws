@@ -169,9 +169,7 @@ Resources:
               - 'sns:GetEndpointAttributes'
               - 'sns:ListTopics'
 
-            Resource: '*'
-
-
+            Resource: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*'
       Roles:
         - !Ref LambdaExecutionRole
 
