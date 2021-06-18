@@ -37,6 +37,7 @@ If everything deploys successfully, your output will resemble the following:
 
 <img src="diagrams/Success.png"></img>
 
+
 ## Testing The Message Echo Function
 Get the URL from the last template Output shown above.
 Example:
@@ -44,4 +45,4 @@ Example:
 ...and paste it into the browser and hit return.You should see the reply:
 <img src="diagrams/ThisWorks.png"></img>
 
-Experiment with different message parameters.
+Experiment with different message parameters. Check your email...you should have a message.

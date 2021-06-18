@@ -20,9 +20,10 @@ Parameters:
       - test
       - prod
 
+  # Edit the default with a valid email address
   SubscriptionEmailParameter:
     Type: String
-    Default: rick@warrenworks.com
+    Default: someone@somewhere.com
 
 
 Resources:
