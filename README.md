@@ -1,6 +1,9 @@
 # it-590-aws
 
-Collection of example CloudFormation templates, bash shell scripts, Dos/PowerShell scripts, and Python code.
+Collection of example CloudFormation templates, bash shell scripts, Dos/PowerShell scripts, (mostly, for now, bash deployment scripts) and Python code.
+
+**NOTE:** I welcome suggestions for example and pull requests.
+
 
 ## Non-Default Virtual Private Cloud (VPC)
 <a href="vpc/">vpc</a>
