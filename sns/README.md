@@ -2,6 +2,8 @@
 
 Deploys an SNS topic and subscription to that topic with an email endpoint.
 
+---
+
 ## Dependencies:
 
 NONE -- The SNS topic deploys in a region's default VPC
