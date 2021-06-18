@@ -16,7 +16,7 @@ Collection of example CloudFormation templates, bash shell scripts, Dos/PowerShe
 
 ## EC2 Web Server -- Apache + PHP
 
-<a href="ec2-web/">ec2-web</a></br>
+<a href="ec2-web">ec2-web</a></br>
 **Depends On:** <a href="vpc/">vpc</a>
 
 ## Elastic File System (EFS)
