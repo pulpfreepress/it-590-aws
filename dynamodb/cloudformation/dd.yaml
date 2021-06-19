@@ -1,0 +1,96 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Deploy single DynamoDb table with Local Secondary Index
+
+
+
+
+Parameters:
+  POCNameParameter:
+    Type: String
+    Default: Your Name
+
+  EnvironmentParameter:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+  TableNameParameter:
+    Type: String
+    Default: EchoMessages
+
+
+Resources:
+  MessageTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TableNameParameter
+      AttributeDefinitions:
+        - AttributeName: IpAddress
+          AttributeType: S
+        - AttributeName: Date
+          AttributeType: S
+        - AttributeName: Message
+          AttributeType: S
+      KeySchema:
+        - AttributeName: IpAddress
+          KeyType: HASH
+        - AttributeName: Date
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: !Join ['-', [GlobalIndex, !Ref TableNameParameter, ByDate]]
+          KeySchema:
+            - AttributeName: Date
+              KeyType: HASH
+            - AttributeName: IpAddress
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - Message
+            ProjectionType: INCLUDE
+          ProvisionedThroughput:
+             ReadCapacityUnits: 5
+             WriteCapacityUnits: 5
+      LocalSecondaryIndexes:
+        - IndexName: !Join ['-', [LocalIndex, !Ref TableNameParameter, One]]
+          KeySchema:
+            - AttributeName: IpAddress
+              KeyType: HASH
+            - AttributeName: Message
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - Date
+            ProjectionType: INCLUDE
+        - IndexName: !Join ['-', [LocalIndex, !Ref TableNameParameter, Two]]
+          KeySchema:
+            - AttributeName: IpAddress
+              KeyType: HASH
+            - AttributeName: Date
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - Message
+            ProjectionType: INCLUDE
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+         ReadCapacityUnits: 5
+         WriteCapacityUnits: 5
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentParameter
+
+
+Outputs:
+  MessageTableName:
+    Description:          DynamoDb table name
+    Value:                !Ref MessageTable
+    Export:
+      Name:               !Join ['-', [!Ref "AWS::StackName", TableName]]
+  MessageTableArn:
+    Description:          DynamoDb table ARN
+    Value:                !GetAtt MessageTable.Arn
+    Export:
+      Name:               !Join ['-', [!Ref "AWS::StackName", !Ref TableNameParameter, ARN]]
