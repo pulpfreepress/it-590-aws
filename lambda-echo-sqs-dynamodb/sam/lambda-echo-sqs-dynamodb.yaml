@@ -147,6 +147,7 @@ Resources:
       Description:                 Allow Lambda to publish to SNS and push and read SQS message queues
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/AWSLambdaExecute'
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole'
       AssumeRolePolicyDocument:
         Version:                   "2012-10-17"
         Statement:
@@ -193,12 +194,13 @@ Resources:
               - 'dynamodb:Get*'
               - 'dynamodb:Scan'
               - 'dynamodb:Query'
-            Resource:
-              [
-                !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*',
-                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*',
-                !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*'
-              ]
+            Resource: '*'
+              # [
+              #   !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*',
+              #   !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*',
+              #   !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*',
+              #   !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*'
+              # ]
       Roles:
         - !Ref LambdaExecutionRole
 
@@ -219,7 +221,7 @@ Resources:
   # Inserts incoming message into SQS Queue and sends SNS Notification
   EchoMessageFunction:
     Type:                          AWS::Serverless::Function
-    DependsOn:                     LambdaExecutionRole
+    # DependsOn:                     LambdaExecutionRole
     Properties:
       FunctionName:                !Join ['-', [!Ref EnvironmentParameter, EchoMessage, Function]]
       Handler:                     echo.lambda_handler
@@ -241,7 +243,7 @@ Resources:
   # Processes messages received from queue and inserts into DynamoDB
   ProcessMessageFunction:
     Type:                          AWS::Serverless::Function
-    DependsOn:                     LambdaExecutionRole
+    # DependsOn:                     LambdaExecutionRole
     Properties:
       FunctionName:                !Join ['-', [!Ref EnvironmentParameter, ProcessMessage, Function]]
       Handler:                     process.lambda_handler
