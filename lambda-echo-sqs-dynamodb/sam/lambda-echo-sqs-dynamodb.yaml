@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion:          '2010-09-09'
 Transform:                         AWS::Serverless-2016-10-31
-Description:                       Deploys an AWS Lambda function that echos the string passed via an API call and publishes it to an SNS topic.
+Description:                       Multi-Lambda message processing pipeline -- API->Lambda->SQS->[SNS && DynamoDB]
 
 # Parameters
 Parameters:
@@ -20,9 +20,17 @@ Parameters:
     Type:                          String
     Default:                       dev-Echo-Message-Topic
 
+  SqsMessageQueueNameParameter:
+    Type:                          String
+    Default:                       dev-Echo-Message-Queue
+
+  SqsMessageQueueArnParameter:
+    Type:                          String
+    Default:                       sqs-message-queue-arn
+
   DynamoDbTableNameParameter:
-    Type: String
-    Default: dev-EchoMessages
+    Type:                          String
+    Default:                       dev-EchoMessages
 
 
 # # Global Values -- These are applied to all resources
@@ -96,7 +104,7 @@ Resources:
       AuthorizationType:           NONE
       Integration:
         Type:                      AWS_PROXY
-        Uri:                       !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentParameter}-EchoFunction/invocations"
+        Uri:                       !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentParameter}-EchoMessage-Function/invocations"
         IntegrationHttpMethod:     POST
       ResourceId:                  !Ref RestAPIResource
       RestApiId:                   !Ref RestAPI
@@ -129,14 +137,14 @@ Resources:
     Type:                          AWS::Lambda::Permission
     Properties:
       Action:                      lambda:InvokeFunction
-      FunctionName:                !Ref EchoFunction
+      FunctionName:                !Ref EchoMessageFunction
       Principal:                   '*'
 
   LambdaExecutionRole:
     Type:                          AWS::IAM::Role
     Properties:
       RoleName:                    !Sub "${EnvironmentParameter}-LambdaExecutionRole"
-      Description:                 Allow Lambda to publish to SNS and SQS
+      Description:                 Allow Lambda to publish to SNS and push and read SQS message queues
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/AWSLambdaExecute'
       AssumeRolePolicyDocument:
@@ -161,6 +169,8 @@ Resources:
         Statement:
           - Effect:                Allow
             Action:
+              - 'lambda:*'
+              - 'sqs:*'
               - 'sqs:DeleteMessage'
               - 'sqs:GetQueueUrl'
               - 'sns:Publish'
@@ -183,45 +193,79 @@ Resources:
               - 'dynamodb:Get*'
               - 'dynamodb:Scan'
               - 'dynamodb:Query'
-    
             Resource:
               [
                 !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*',
-                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*'
+                !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*',
+                !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*'
               ]
-
-
       Roles:
         - !Ref LambdaExecutionRole
 
 
-  # Functions
-  EchoFunction:
-    Type:                          AWS::Serverless::Function
-    DependsOn: LambdaExecutionRole
+  # Event Source Mapping to tell Lambda to automatically receive Messages
+  # from an SQS queue.
+  MessageQueueEventSourceMapping:
+    Type:                          AWS::Lambda::EventSourceMapping
     Properties:
-      FunctionName:                !Join ['-', [!Ref EnvironmentParameter, EchoFunction]]
+      BatchSize:                   10
+      Enabled:                     True
+      EventSourceArn:              !Ref SqsMessageQueueArnParameter
+      FunctionName:                !Ref ProcessMessageFunction
+
+
+  # Functions
+  # EchoMessageFunction -- Triggered by APIGateway /echo path.
+  # Inserts incoming message into SQS Queue and sends SNS Notification
+  EchoMessageFunction:
+    Type:                          AWS::Serverless::Function
+    DependsOn:                     LambdaExecutionRole
+    Properties:
+      FunctionName:                !Join ['-', [!Ref EnvironmentParameter, EchoMessage, Function]]
       Handler:                     echo.lambda_handler
       Runtime:                     python3.8
       CodeUri:                     echo.zip
       Tracing:                     Active
       Timeout:                     15
       Role:
-        Fn::GetAtt: LambdaExecutionRole.Arn
+        Fn::GetAtt:                LambdaExecutionRole.Arn
       Environment:
         Variables:
-          sqs_queue:               message_queue
-          sns_topic_arn:          !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${SnsTopicNameParameter}"
-          dynamodb_table_name:    !Ref DynamoDbTableNameParameter
+          sqs_queue_name:          !Ref SqsMessageQueueNameParameter
+          sns_topic_arn:           !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${SnsTopicNameParameter}"
+          dynamodb_table_name:     !Ref DynamoDbTableNameParameter
+
+
+  # Functions
+  # ProcessMessageFunction -- Triggered by SQS Message Queue.
+  # Processes messages received from queue and inserts into DynamoDB
+  ProcessMessageFunction:
+    Type:                          AWS::Serverless::Function
+    DependsOn:                     LambdaExecutionRole
+    Properties:
+      FunctionName:                !Join ['-', [!Ref EnvironmentParameter, ProcessMessage, Function]]
+      Handler:                     process.lambda_handler
+      Runtime:                     python3.8
+      CodeUri:                     process.zip
+      Tracing:                     Active
+      Timeout:                     15
+      Role:
+        Fn::GetAtt:                LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          sqs_queue_name:          !Ref SqsMessageQueueNameParameter
+          dynamodb_table_name:     !Ref DynamoDbTableNameParameter
+
+
 
 # Outputs
 Outputs:
   EchoApi:
-    Description:                   "API Gateway endpoint URL for Prod stage for echo function"
+    Description:                   API Gateway endpoint URL for Prod stage for echo function.
     Value:                         !Sub "https://${RestAPI}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentParameter}/echo?message=This works!"
-  EchoFunction:
-    Description:                   "Hello World Lambda Function ARN"
-    Value:                         !GetAtt EchoFunction.Arn
-  # EchoFunctionIamRole:
-  #   Description:                   "Implicit IAM Role created for Hello World function"
-  #   Value:                         !GetAtt EchoFunctionRole.Arn
+  EchoMessageFunction:
+    Description:                   Echo Message Function ARN
+    Value:                         !GetAtt EchoMessageFunction.Arn
+  ProcessMessageFunction:
+    Description:                   Process Message Function ARN
+    Value:                         !GetAtt ProcessMessageFunction.Arn

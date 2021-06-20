@@ -4,10 +4,10 @@ import os
 
 client = boto3.client('sns')
 topic_arn = os.environ.get('sns_topic_arn')
-dynamodb = boto3.resource('dynamodb')
-table_name = os.environ.get('dynamodb_table_name')
-table = dynamodb.Table(table_name)
 
+sqs = boto3.resource('sqs')
+queue_name = os.environ.get('sqs_queue_name')
+queue = sqs.get_queue_by_name(QueueName=queue_name)
 
 
 
@@ -23,16 +23,16 @@ def lambda_handler(event, context):
                 if event['queryStringParameters']['message'] is not None:
                     message = event['queryStringParameters']['message']
 
-
     item = {}
+    # Push message into message queue
     try:
         item['IpAddress'] = event['headers']['X-Forwarded-For']
         item['Date'] = event['requestContext']['requestTime']
         item['Message'] = message
-        response = table.put_item(Item=item)
-        print("DynamoDB put_item Response: " + str(response))
+        response = queue.send_message(MessageBody=json.dumps(item), DelaySeconds=0,)
+
     except Exception as e:
-        print("DynamoDb ERROR: " + str(e))
+        print("SQS ERROR: " + str(e))
 
     # Publish to Message Topic
     try:
