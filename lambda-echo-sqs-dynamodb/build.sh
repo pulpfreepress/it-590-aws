@@ -17,15 +17,25 @@ declare -r STACK_NAME="lambda-echo-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
 declare -r VPC_STACK_NAME="vpc-stack"
 declare -r EFS_STACK_NAME="efs-stack"
+declare -r SQS_STACK_NAME="sqs-stack"
 declare -r POC_NAME="YourName"
 declare -r DEFAULT_SNS_TOPIC_NAME="Echo-Message-Topic"
+declare -r DEFAULT_SQS_MESSAGE_QUEUE_NAME="Echo-Message-Queue"
 declare -r DYNAMODB_STACK_NAME="dynamodb-stack"
+
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
-declare _dynamodb_table_name=$(aws cloudformation list-exports --query "Exports [?contains(Name,'${_deployment_environment}-${DYNAMODB_STACK_NAME}-TableName')].Value" --output text)
-
+declare _dynamodb_table_name=$(aws cloudformation list-exports \
+        --query "Exports [?contains(Name,'${_deployment_environment}-${DYNAMODB_STACK_NAME}-TableName')].Value" \
+        --output text)
+declare _sqs_message_queue_name=$(aws cloudformation list-exports \
+        --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Name')].Value" \
+        --output text)
+declare _sqs_message_queue_arn=$(aws cloudformation list-exports \
+        --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Arn')].Value" \
+        --output text)
 
 
 
@@ -37,9 +47,11 @@ prep_files() {
   mkdir ${BUILD_DIR}
   # Remove echo.zip from sam dir
   rm -f sam/echo.zip
+  rm -r sam/process.zip
   # Create echo.zip in sam dir and add src/echo.py
   # and leave off the src dir name (-j)
   zip -j sam/echo.zip src/echo.py
+  zip -j sam/process.zip src/process.py
 }
 
 
@@ -68,6 +80,8 @@ sam_deploy() {
                                      "POCNameParameter=${POC_NAME}" \
                                      "SnsTopicNameParameter=${_deployment_environment}-${DEFAULT_SNS_TOPIC_NAME}" \
                                      "DynamoDbTableNameParameter=${_dynamodb_table_name}" \
+                                     "SqsMessageQueueNameParameter=${_sqs_message_queue_name}" \
+                                     "SqsMessageQueueArnParameter=${_sqs_message_queue_arn}" \
               --force-upload \
               --debug
 
@@ -82,6 +96,9 @@ display_usage() {
     echo " Examples: ./build.sh test va package       # Package lambda function(s) and generate template.yaml"
     echo "                                              for test environment in us-east-1 region"
     echo "           ./build.sh test va deploy        # Deploy packaged lambda functions(s)"
+    echo
+    echo "Message Queue ARN: "${_sqs_message_queue_arn}
+    echo "Message Queue Name: "${_sqs_message_queue_name}
     echo "-----------------------------------------------------------------------"
 }
 
