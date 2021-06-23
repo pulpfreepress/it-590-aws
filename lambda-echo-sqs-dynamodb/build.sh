@@ -47,11 +47,13 @@ prep_files() {
   mkdir ${BUILD_DIR}
   # Remove echo.zip from sam dir
   rm -f sam/echo.zip
-  rm -r sam/process.zip
+  rm -f sam/process.zip
+  rm -f sam/query.zip
   # Create echo.zip in sam dir and add src/echo.py
   # and leave off the src dir name (-j)
   zip -j sam/echo.zip src/echo.py
   zip -j sam/process.zip src/process.py
+  zip -j sam/query.zip src/query.py
 }
 
 
