@@ -1,14 +1,29 @@
-# Lambda Echo Message with Custom Rest API Application
+# Serverless Application with SNS, SQS, and DynamoDB
 
-A serverless function that echos a message submitted via a URL. This is an example of a serverless application that consists of one Lambda function and a custom Rest API and deployment stage.
+This is an example of a serverless application that consists of multiple lambda functions, a custom Rest API and deployment stage, SNS topic, SQS Queue, and a DynamoDB table with Global and Local secondary indexes.
 
 ---
 
-## Depends On: <a href="../sns">sns example</a>
+## Depends On: </br>
+- <a href="../sns">sns example</a> </br>
+- <a href="../sqs">sqs example</a> </br>
+- <a href="../dynamodb">dynamodb example</a> </br>
 
-Deploy the <a href="../sns">Simple Notification Service</a> example. Be sure to use a valid subscription email.
 
-## Preliminaries (**No need to repeat if you've already completed these from the lambda-echo example.**)
+
+
+Deploy the service examples listed above. Be sure to use a valid subscription email for the SNS service as you'll need to verify the subscription.
+
+## Architecture Diagram
+<img src="diagrams/MessageEchoServiceArchitecture.png"/>
+
+Referring to the architecuture diagram above, the application implements two processing pipelines:
+- The /echo endpoint enables message submission and passes the URL `message` parameter to the EchoMessage lambda function. The lambda function pushes the message text onto an SQS queue, and publishes the message text to an SNS topic, which sends an email notification to the subscription email address. The ProcessMessage lambda function takes messages off the queue and inserts them into the EchoMessages DynamoDB table.
+- The /query endpoint simply scans the entire DynamoDB table and returns all messages formatted as an HTML table.
+
+
+## Preliminaries
+(**No need to repeat if you've already completed these from the lambda-echo example.**)
 
 This example uses a Serverless Application Model (SAM) template which is transformed into CloudFormation before deployment. Before you attempt to run the build.sh script, you'll need to execute the following tasks:
 
@@ -46,3 +61,7 @@ Example:
 <img src="diagrams/ThisWorks.png"></img>
 
 Experiment with different message parameters. Check your email...you should have a message.
+
+To query messages, use the /query endpoint — Example: `https://mml611602g.execute-api.us-east-2.amazonaws.com/dev/query` ...will return something similar to:
+
+<img src="diagrams/QueryMessages.png"></img>
