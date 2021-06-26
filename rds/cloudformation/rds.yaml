@@ -1,0 +1,165 @@
+---
+AWSTemplateFormatVersion:          "2010-09-09"
+Description:                       RDS MySQL instance
+
+Parameters:
+
+  DBNameParameter:
+    Default:                       mydb
+    Description:                   My database
+    Type:                          String
+    MinLength:                     '1'
+    MaxLength:                     '64'
+    AllowedPattern:                '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription:         Must begin with a letter and contain only alphanumeric characters.
+
+  DBInstanceClassParameter:
+    Default:                       db.t2.micro
+    Description:                   DB instance class
+    Type:                          String
+    ConstraintDescription:         Must select a valid DB instance type.
+
+  DBAllocatedStorageParameter:
+    Default:                       '5'
+    Description:                   The size of the database (GiB)
+    Type:                          Number
+    MinValue:                      '5'
+    MaxValue:                      '1024'
+    ConstraintDescription:         must be between 20 and 65536 GiB.
+
+  DBUsernameParameter:
+    NoEcho:                        'true'
+    Description:                   Username for MySQL database access
+    Type:                          String
+    MinLength:                     '1'
+    MaxLength:                     '16'
+    AllowedPattern:                '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription:         must begin with a letter and contain only alphanumeric characters.
+
+  DBPasswordParameter:
+    NoEcho:                        'true'
+    Description:                   Password MySQL database access
+    Type:                          String
+    MinLength:                     '8'
+    MaxLength:                     '41'
+    AllowedPattern:                '[a-zA-Z0-9$]*'
+    ConstraintDescription:         must contain only alphanumeric characters.
+
+  VpcStackNameParameter:
+    Type:                          String
+    Default:                       dev-vpc-stack
+
+  POCNameParameter:
+    Type:                          String
+    Default:                       Your Name
+
+  EnvironmentParameter:
+    Type:                          String
+    Default:                       dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+
+Resources:
+
+  MySqlRdsInstance:
+    Type:                          'AWS::RDS::DBInstance'
+    Properties:
+      DBName:                      !Ref DBNameParameter
+      DBInstanceClass:             !Ref DBInstanceClassParameter
+      AllocatedStorage:            !Ref DBAllocatedStorageParameter
+      Engine:                      MySQL
+      EngineVersion:               8.0.20
+      MasterUsername:              !Ref DBUsernameParameter
+      MasterUserPassword:          !Ref DBPasswordParameter
+      VPCSecurityGroups:
+        - !Ref DatabaseLayerSecurityGroup
+        - Fn::ImportValue:         !Sub "${VpcStackNameParameter}-DefaultSecurityGroup"
+      EnableCloudwatchLogsExports:
+        - general
+      DBSubnetGroupName:           !Ref MySqlDbSubnetGroup
+      Tags:
+        - Key:                     Environment
+          Value:                   !Ref EnvironmentParameter
+
+
+  MySqlDbSubnetGroup:
+    Type:                          AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName:           !Join ['-', [!Ref DBNameParameter, SubnetGroup]]
+      DBSubnetGroupDescription:    Subnet group for MySQL database instance.
+      SubnetIds:
+        - Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PrivateSubnet1"
+        - Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PrivateSubnet2"
+      Tags:
+        - Key:                     Environment
+          Value:                   !Ref EnvironmentParameter
+
+  # MySqlDbProxy:
+  #   Type:                        AWS::RDS::DBProxy
+  #   Properties:
+  #     DBProxyName:               !Join ['-', [!Ref DBNameParameter, Proxy]]
+  #     Auth:
+  #       -   AuthScheme:          String
+  #           Description:         String
+  #           IAMAuth:             String
+  #           SecretArn:           String
+  #           UserName:            String
+  #     DebugLogging:              True
+  #     EngineFamily:              MYSQL
+  #     IdleClientTimeout:         Integer
+  #     RequireTLS:                Boolean
+  #     RoleArn:                   String
+  #     Tags:
+  #       - TagFormat
+  #     VpcSecurityGroupIds:
+  #       - String
+  #     VpcSubnetIds:
+  #       - String
+
+
+  DatabaseLayerSecurityGroup:
+      Type:                        AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription:          Allow tcp traffic on port 80
+        GroupName:                 Port3306AllTraffic
+        VpcId:
+          Fn::ImportValue:         !Sub "${VpcStackNameParameter}-VPCID"
+        SecurityGroupIngress:
+          - IpProtocol:            tcp
+            FromPort:              3306
+            ToPort:                3306
+            CidrIp:                0.0.0.0/0
+          - IpProtocol:            icmp
+            FromPort:              8
+            ToPort:                -1
+            CidrIp:                0.0.0.0/0
+        SecurityGroupEgress:
+          - IpProtocol:            -1
+            CidrIp:                0.0.0.0/0
+        Tags:
+          - Key:                   Environment
+            Value:                 !Ref EnvironmentParameter
+          - Key:                   Name
+            Value:                 !Join ['-', [!Ref "AWS::StackName", DBLayer, Port3306]]
+
+Outputs:
+  RdsInstanceId:
+    Description:                   InstanceId of the newly created RDS instance
+    Value:                         !Ref MySqlRdsInstance
+    Export:
+      Name:                        !Join ['-', [!Ref "AWS::StackName", RdsInstance, Id]]
+  RdsEndpointAddress:
+    Description:                   RDS instance connection address
+    Value:
+      Fn::GetAtt:                  MySqlRdsInstance.Endpoint.Address
+    Export:
+      Name:                        !Join ['-', [!Ref "AWS::StackName", RdsInstance, Address]]
+  RdsEndpointPort:
+    Description:                   RDS instance port
+    Value:
+      Fn::GetAtt:                  MySqlRdsInstance.Endpoint.Port
+    Export:
+      Name:                        !Join ['-', [!Ref "AWS::StackName", RdsInstance, Port]]
