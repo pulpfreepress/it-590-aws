@@ -8,7 +8,17 @@ Metadata:
   template metadata
 
 Parameters:
-  set of parameters
+  POCNameParameter:
+    Type: String
+    Default: Your Name
+
+  EnvironmentParameter:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
 
 Rules:
   set of rules

@@ -175,7 +175,9 @@ Resources:
           #!/bin/bash
           exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
           yum update -y
-          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          amazon-linux-extras install -y php7.2
+          sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+          sudo yum install -y mysql-community-client
           yum install -y httpd
           mkdir /webshare
           mkdir /webshare/www

@@ -9,6 +9,7 @@ table = dynamodb.Table(table_name)
 
 def lambda_handler(event, context):
     print("******* Begin Execution *********")
+    print('***** Another line of debug statements *****')
     print("EVENT: " + json.dumps(event))
     json_region = os.environ['AWS_REGION']
     print('JSON Region: ' + json_region)
