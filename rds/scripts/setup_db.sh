@@ -1,6 +1,7 @@
 #!/bin/bash
 
 declare -r DB_USER_NAME="admin"
+declare -r REGION_VIRGINIA="us-east-1"
 
 
 declare _db_password=$(aws --region ${REGION_VIRGINIA} secretsmanager get-secret-value --secret-id ${DB_PASSWORD_SECRET_NAME} | jq -r '.SecretString' | jq -r '.db_password')

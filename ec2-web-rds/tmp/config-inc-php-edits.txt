@@ -1,0 +1,15 @@
+
+/** Add the following lines to the config.inc.php file above the End of servers configuration comment. */
+/** Edit the host connection string as necessary including region. */
+
+$i++;
+$cfg['Servers'][$i]['host'] = 'nnnnnnnnnnnnnn.nnnnnnnnnnnn.us-east-2.rds.amazonaws.com';
+$cfg['Servers'][$i]['port'] = '3306';
+$cfg['Servers'][$i]['verbose'] = 'RDS';
+$cfg['Servers'][$i]['connect_type'] = 'tcp';
+$cfg['Servers'][$i]['extension'] = 'mysql';
+$cfg['Servers'][$i]['compress'] = TRUE;
+
+/**
+ * End of servers configuration
+ */
