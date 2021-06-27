@@ -100,3 +100,11 @@ Example: http://ec2-user@ec2-18-222-39-229.us-east-2.compute.amazonaws.com/test.
 
 ### Web Server 2
 <img src="diagrams/WebServer2.png"></img>
+
+# Configuring phpMyAdmin to Access RDS
+
+## Verify RDS Management Server Connectivity
+
+## SSH Into RDS Management Server
+
+## Edit `/var/www/html/phpMyAdmin/config.inc.php`
