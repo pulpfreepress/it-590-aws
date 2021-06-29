@@ -16,11 +16,11 @@ Pictured below is a custom VPC that has both public and private subnets. A subne
 
 # Deploying the VPC
 ---------
-The VPC CloudFormation template given in this project `vpc.yml` defines a custom VPC with two public and two private subnets, an Internet Gateway, NAT Gateway, NACL, RouteTables, Routes, and a Security Group that limits access to a known IP address. Feel free to customize as you see fit.
+The VPC CloudFormation template given in this project `vpc.yml` defines a custom VPC with three public and three private subnets, an Internet Gateway, NAT Gateway, NACL, RouteTables, Routes, and a Security Group that limits access to a known IP address. Feel free to customize as you see fit.
 
   * Install and configure AWS CLI
   * On Windows -- Install Git with Unix/Linux tools for access to bash shell
   * Edit `build.sh` and/or `vpc.yml` to customize deployment
-  * You'll need to edit the SSH Security Group and change the IP address to your IP address
+  * You'll need to edit the SecurityGroupAllowedIP parameter and change the IP address to your IP address
   * Run `./build.sh` to get help
-  * Run `./build.sh oh vpc` to deploy VPC in us-east-2
+  * Run `./build.sh dev oh vpc` to deploy development VPC in us-east-2

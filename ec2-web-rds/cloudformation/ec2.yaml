@@ -71,20 +71,6 @@ Parameters:
 
 
 
-
-
-# Rules:
-#   set of rules
-#
-# Mappings:
-#   set of mappings
-#
-# Conditions:
-#   set of conditions
-#
-# Transform:
-#   set of transforms
-
 Resources:
 
   EC2Role:
@@ -179,15 +165,11 @@ Resources:
           #!/bin/bash
           exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
           yum update -y
-          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          amazon-linux-extras install -y php7.2
           yum install php-mbstring php-xml -y
           #sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
           sudo yum install -y mysql-community-client
-
-          yum install -y httpd mariadb-server
-
-          systemctl start mariadb
-          sudo systemctl enable mariadb
+          yum install -y httpd
           mkdir /webshare
           mkdir /webshare/www
           mkdir /webshare/www/html
@@ -208,14 +190,6 @@ Resources:
           if [ ! -f /webshare/www/html/phpinfo.php ]; then
             echo "<?php phpinfo(); ?>" > /webshare/www/html/phpinfo.php
           fi
-          # Install PHPMyAdmin
-          cd /webshare/www/html
-          wget https://files.phpmyadmin.net/phpMyAdmin/5.1.1/phpMyAdmin-5.1.1-english.tar.gz
-          mkdir phpMyAdmin && tar -xvzf phpMyAdmin-5.1.1-english.tar.gz -C phpMyAdmin --strip-components 1
-          rm phpMyAdmin-5.1.1-english.tar.gz
-          systemctl restart httpd
-          systemctl restart php-fpm
-
       Tags:
         - Key:                   Environment
           Value:                 !Ref EnvironmentParameter
@@ -241,7 +215,7 @@ Resources:
           #!/bin/bash
           exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
           yum update -y
-          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          amazon-linux-extras install -y php7.2
           yum install php-mbstring php-xml -y
           #sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
           sudo yum install -y mysql-community-client
@@ -253,6 +227,11 @@ Resources:
           sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
           systemctl start httpd
           systemctl enable httpd
+          yum install -y mod_ssl
+          cd /etc/pki/tls/certs
+          ./make-dummy-cert localhost.crt
+          cd
+          sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
           usermod -a -G apache ec2-user
           chown -R ec2-user:apache /webshare/www/html
           chmod 2775 /webshare/www/html
@@ -270,6 +249,61 @@ Resources:
         - Key:                   Name
           Value:                 !Join ['-', [!Ref EnvironmentParameter, LinuxWebServer2]]
 
+  # PHPMyAdmin Server
+  RDSManagementServer:
+    Type:                        AWS::EC2::Instance
+    Properties:
+      InstanceType:              !Ref InstanceTypeParameter
+      SecurityGroupIds:
+        - Fn::ImportValue:       !Sub "${VpcStackNameParameter}-DefaultSecurityGroup"
+        - Fn::ImportValue:       !Sub "${VpcStackNameParameter}-RDSManagementSecurityGroup"
+      KeyName:                   !Ref KeyNameParameter
+      ImageId:                   !Ref LatestAmiIdParameter
+      SubnetId:
+        Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PublicSubnet3"
+      UserData:
+        Fn::Base64:
+          !Sub |
+          #!/bin/bash
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          yum update -y
+          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          yum install php-mbstring php-xml -y
+          #sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+          sudo yum install -y mysql-community-client
+          yum install -y httpd mariadb-server
+          systemctl start mariadb
+          systemctl start httpd
+          systemctl enable httpd
+          yum install -y mod_ssl
+          cd /etc/pki/tls/certs
+          ./make-dummy-cert localhost.crt
+          cd
+          sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
+          usermod -a -G apache ec2-user
+          chown -R ec2-user:apache /var/www/html
+          chmod 2775 /var/www/html
+          find /var/www/html -type d -exec chmod 2775 {} \;
+          find /var/www/html -type f -exec chmod 0664 {} \;
+          if [ ! -f /var/www/html/phpinfo.php ]; then
+            echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
+          fi
+          # Install PHPMyAdmin
+          cd /var/www/html
+          wget https://files.phpmyadmin.net/phpMyAdmin/5.1.1/phpMyAdmin-5.1.1-english.tar.gz
+          mkdir phpMyAdmin && tar -xvzf phpMyAdmin-5.1.1-english.tar.gz -C phpMyAdmin --strip-components 1
+          rm phpMyAdmin-5.1.1-english.tar.gz
+          systemctl restart httpd
+          systemctl restart php-fpm
+
+      Tags:
+        - Key:                   Environment
+          Value:                 !Ref EnvironmentParameter
+        - Key:                   Group
+          Value:                 RDSManagement
+        - Key:                   Name
+          Value:                 !Join ['-', [!Ref EnvironmentParameter, RDSManagementServer]]
+
 
 
 Outputs:
@@ -283,6 +317,11 @@ Outputs:
     Value:                       !Ref LinuxServer2
     Export:
       Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerTwo]]
+  RDSManagementServerId:
+    Description:                 RDS Management Server ID
+    Value:                       !Ref RDSManagementServer
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", RDSManagementServer]]
   LinuxServerOneAZ:
     Description:                 Availability Zone of the newly created EC2 instance
     Value:                       !GetAtt [LinuxServer1, AvailabilityZone]
@@ -293,6 +332,11 @@ Outputs:
     Value:                       !GetAtt [LinuxServer2, AvailabilityZone]
     Export:
       Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerTwoAZ]]
+  RDSManagementServerAZ:
+    Description:                 RDSManagementServer AZ
+    Value:                       !GetAtt [RDSManagementServer, AvailabilityZone]
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", RDSManagementServerAZ]]
   LinuxServerOnePublicDNS:
     Description:                 Public DNSName of the newly created EC2 instance
     Value:                       !GetAtt [LinuxServer1, PublicDnsName]
@@ -303,6 +347,11 @@ Outputs:
     Value:                       !GetAtt [LinuxServer2, PublicDnsName]
     Export:
       Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerTwoPublicDNS]]
+  RDSManagementServerPublicDNS:
+    Description:                 RDS Management Server public DNS
+    Value:                       !GetAtt [RDSManagementServer, PublicDnsName]
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", RDSManagementServerPublicDNS]]
   LinuxServerOnePublicIP:
     Description:                 Public IP address of the newly created EC2 instance
     Value:                       !GetAtt [LinuxServer1, PublicIp]
@@ -313,3 +362,8 @@ Outputs:
     Value:                       !GetAtt [LinuxServer2, PublicIp]
     Export:
       Name:                      !Join ['-', [!Ref "AWS::StackName", LinuxServerTwoPublicIP]]
+  RDSManagementServerPublicIP:
+    Description:                 RDS Management Server IP
+    Value:                       !GetAtt [RDSManagementServer, PublicIp]
+    Export:
+      Name:                      !Join ['-', [!Ref "AWS::StackName", RDSManagementServerPublicIP]]

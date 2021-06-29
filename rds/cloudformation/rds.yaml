@@ -93,6 +93,7 @@ Resources:
       SubnetIds:
         - Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PrivateSubnet1"
         - Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PrivateSubnet2"
+        - Fn::ImportValue:         !Sub "${VpcStackNameParameter}-PrivateSubnet3"
       Tags:
         - Key:                     Environment
           Value:                   !Ref EnvironmentParameter
