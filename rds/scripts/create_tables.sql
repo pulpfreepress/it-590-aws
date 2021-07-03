@@ -1,4 +1,4 @@
-use dev-database;
+use devdatabase;
 
 CREATE TABLE IF NOT EXISTS tasks (
     task_id INT AUTO_INCREMENT PRIMARY KEY,

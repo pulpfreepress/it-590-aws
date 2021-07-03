@@ -167,20 +167,25 @@ Resources:
           yum update -y
           amazon-linux-extras install -y php7.2
           yum install php-mbstring php-xml -y
-          #sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+          sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
           sudo yum install -y mysql-community-client
           yum install -y httpd
+          echo "************ Creating /WebShare/www/html Directory ***************"
           mkdir /webshare
           mkdir /webshare/www
           mkdir /webshare/www/html
-          mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebFileShareParameter}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html
+          echo "${EFSWebFileShareParameter}:/ /webshare/www/html efs tls,_netdev" >> /etc/fstab
+          #mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebFileShareParameter}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html
+          sudo mount -t efs -o tls ${EFSWebFileShareParameter}:/ efs
+          echo "************ EFS Volume Mounted ***************"
           sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
           systemctl start httpd
           systemctl enable httpd
           yum install -y mod_ssl
+          pushd .
           cd /etc/pki/tls/certs
           ./make-dummy-cert localhost.crt
-          cd
+          popd
           sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
           usermod -a -G apache ec2-user
           chown -R ec2-user:apache /webshare/www/html
@@ -217,20 +222,24 @@ Resources:
           yum update -y
           amazon-linux-extras install -y php7.2
           yum install php-mbstring php-xml -y
-          #sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+          sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
           sudo yum install -y mysql-community-client
           yum install -y httpd
+          echo "************ Creating /WebShare/www/html Directory ***************"
           mkdir /webshare
           mkdir /webshare/www
           mkdir /webshare/www/html
-          mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebFileShareParameter}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html
+          echo "${EFSWebFileShareParameter}:/ /webshare/www/html efs tls,_netdev" >> /etc/fstab
+          #mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebFileShareParameter}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html
+          sudo mount -t efs -o tls ${EFSWebFileShareParameter}:/ efs
           sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
           systemctl start httpd
           systemctl enable httpd
           yum install -y mod_ssl
+          pushd .
           cd /etc/pki/tls/certs
           ./make-dummy-cert localhost.crt
-          cd
+          popd
           sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
           usermod -a -G apache ec2-user
           chown -R ec2-user:apache /webshare/www/html
@@ -269,16 +278,17 @@ Resources:
           yum update -y
           amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
           yum install php-mbstring php-xml -y
-          #sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+          sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
           sudo yum install -y mysql-community-client
           yum install -y httpd mariadb-server
           systemctl start mariadb
           systemctl start httpd
           systemctl enable httpd
           yum install -y mod_ssl
+          pushd .
           cd /etc/pki/tls/certs
           ./make-dummy-cert localhost.crt
-          cd
+          popd
           sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
           usermod -a -G apache ec2-user
           chown -R ec2-user:apache /var/www/html

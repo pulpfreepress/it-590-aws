@@ -43,7 +43,7 @@ list_exports(){
 display_usage() {
     echo
     echo "-----------------------------------------------------------------------"
-    echo " Usage: `basename $0` [dev | test | prod] [va | oh] dynamodb "
+    echo " Usage: `basename $0` [dev | test | prod] [va | oh] dd "
     echo "                                   "
     echo " Example: ./build.sh test va dd       # Deploy test environment dynamodb table in us-east-1"
     echo "-----------------------------------------------------------------------"
