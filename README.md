@@ -1,8 +1,9 @@
 # it-590-aws
 
-Collection of example CloudFormation templates, bash shell scripts, Dos/PowerShell scripts, (mostly, for now, bash deployment scripts) and Python code.
+Collection of example CloudFormation templates, bash shell scripts, and Python code. To run these examples on Windows machines, install <a href="https://git-scm.com/downloads">git</a> with bash window.  
 
-**NOTE:** I welcome suggestions for example and pull requests.
+**NOTE:** I welcome suggestions for examples and pull requests.
+Also, many of these examples depend on and reference resources located in other stacks that are assumed to be deployed. (Cross-Stack References) See the **Depends on** for each repo sub-project below.
 
 
 ## Non-Default Virtual Private Cloud (VPC)
