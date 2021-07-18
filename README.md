@@ -56,12 +56,16 @@ Also, many of these examples depend on and reference resources located in other 
 
 <a href="dynamodb/">dynamodb</a>
 
+## DynamoDB Global Table
+<a href="dynamodb-global-table">dynamodb-global-table</a></br>
+**NOTE:** Deploy this is you want multi-region replication for highly-available (HA) <a href="dynamodb-global-table">Lambda Echo SQS DynamoDB</a> pipelines in multiple regions
+
 ## Lambda Echo with SQS, SNS, and DynamoDB
 
 <a href="lambda-echo-sqs-dynamodb/">lambda-echo-sqs-dynamodb</a></br>
 **Depends On:** <a href="sns">sns</a> && <a href="sqs">sqs</a>&& <a href="dynamodb">dynamodb</a></br>
 
-## Relational Databae Service (RDS)
+## Relational Database Service (RDS)
 
 <a href="rds/">rds</a></br>
 **Depends On:** <a href="vpc/">vpc</a>
