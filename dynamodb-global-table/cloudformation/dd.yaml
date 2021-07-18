@@ -24,7 +24,7 @@ Parameters:
 
 Resources:
   MessageTable:
-    Type: AWS::DynamoDB::Table
+    Type: AWS::DynamoDB::GlobalTable
     Properties:
       TableName: !Ref TableNameParameter
       AttributeDefinitions:
@@ -50,9 +50,9 @@ Resources:
             NonKeyAttributes:
               - Message
             ProjectionType: INCLUDE
-          ProvisionedThroughput:
-             ReadCapacityUnits: 5
-             WriteCapacityUnits: 5
+          # ProvisionedThroughput:
+          #    ReadCapacityUnits: 5
+          #    WriteCapacityUnits: 5
       LocalSecondaryIndexes:
         - IndexName: !Join ['-', [LocalIndex, !Ref TableNameParameter, One]]
           KeySchema:
@@ -74,15 +74,18 @@ Resources:
             NonKeyAttributes:
               - Message
             ProjectionType: INCLUDE
-      BillingMode: PROVISIONED
-      ProvisionedThroughput:
-         ReadCapacityUnits: 5
-         WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
+      # ProvisionedThroughput:
+      #    ReadCapacityUnits: 5
+      #    WriteCapacityUnits: 5
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
-      Tags:
-        - Key: Environment
-          Value: !Ref EnvironmentParameter
+      Replicas:
+        - Region: us-east-2
+        - Region: us-east-1
+      # Tags:
+      #   - Key: Environment
+      #     Value: !Ref EnvironmentParameter
 
 
 Outputs:

@@ -6,7 +6,14 @@ declare -r SAM_TEMPLATE_DIR="sam"
 declare -r SAM_TEMPLATE_FILE="lambda-echo-sns.yaml"
 # You will need to use a different deployment bucket Name
 # and make sure it exits along with the prefix folder/path
-declare -r S3_BUCKET="deployment-it590-us-east-2"
+# NOTE: The _deployment_region variable is appended to the
+#       bucket name making the full bucket name either:
+#             deployment-it590-us-east-1   -or-
+#             deployment-it590-us-east-2
+#
+# A bucket in each region must exist if you wish to deploy
+# the echo message processing pipeline in multiple regions
+declare -r S3_BUCKET="deployment-it590"
 declare -r S3_PREFIX="sam"
 # ********************************************************
 declare -r BUILD_DIR="build"
@@ -43,7 +50,7 @@ prep_files() {
 sam_package() {
   echo "Running SAM CLI Package."
   sam package --template ${SAM_TEMPLATE_DIR}/${SAM_TEMPLATE_FILE} \
-              --s3-bucket ${S3_BUCKET} \
+              --s3-bucket ${S3_BUCKET}-${_deployment_region} \
               --s3-prefix ${S3_PREFIX} \
               --output-template-file ${BUILD_DIR}/${DEPLOYMENT_TEMPLATE_FILE} \
               --region ${_deployment_region} \
@@ -56,7 +63,7 @@ sam_deploy() {
     echo "Running SAM CLI build. Deploying Lambda function with API Gateway..."
     sam deploy --template-file ${BUILD_DIR}/${DEPLOYMENT_TEMPLATE_FILE} \
                --stack-name ${_deployment_environment}-${STACK_NAME} \
-               --s3-bucket ${S3_BUCKET} \
+               --s3-bucket ${S3_BUCKET}-${_deployment_region} \
                --s3-prefix ${S3_PREFIX} \
                --capabilities CAPABILITY_NAMED_IAM \
                --region ${_deployment_region} \

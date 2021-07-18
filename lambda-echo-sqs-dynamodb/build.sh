@@ -6,7 +6,14 @@ declare -r SAM_TEMPLATE_DIR="sam"
 declare -r SAM_TEMPLATE_FILE="lambda-echo-sqs-dynamodb.yaml"
 # You will need to use a different deployment bucket Name
 # and make sure it exits along with the prefix folder/path
-declare -r S3_BUCKET="deployment-it590-us-east-2"
+# NOTE: The _deployment_region variable is appended to the
+#       bucket name making the full bucket name either:
+#             deployment-it590-us-east-1   -or-
+#             deployment-it590-us-east-2
+#
+# A bucket in each region must exist if you wish to deploy
+# the echo message processing pipeline in multiple regions
+declare -r S3_BUCKET="deployment-it590"
 declare -r S3_PREFIX="sam"
 # ********************************************************
 declare -r BUILD_DIR="build"
@@ -22,22 +29,34 @@ declare -r POC_NAME="YourName"
 declare -r DEFAULT_SNS_TOPIC_NAME="Echo-Message-Topic"
 declare -r DEFAULT_SQS_MESSAGE_QUEUE_NAME="Echo-Message-Queue"
 declare -r DYNAMODB_STACK_NAME="dynamodb-stack"
-
-
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
-declare _dynamodb_table_name=$(aws cloudformation list-exports \
+
+# Extract exports and set variables from default region
+declare _dynamodb_table_name=$(aws --region ${_deployment_region} cloudformation list-exports \
         --query "Exports [?contains(Name,'${_deployment_environment}-${DYNAMODB_STACK_NAME}-TableName')].Value" \
         --output text)
-declare _sqs_message_queue_name=$(aws cloudformation list-exports \
+declare _sqs_message_queue_name=$(aws --region ${_deployment_region} cloudformation list-exports \
         --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Name')].Value" \
         --output text)
-declare _sqs_message_queue_arn=$(aws cloudformation list-exports \
+declare _sqs_message_queue_arn=$(aws --region ${_deployment_region} cloudformation list-exports \
         --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Arn')].Value" \
         --output text)
 
 
+get_exports(){
+   _dynamodb_table_name=$(aws --region ${_deployment_region} cloudformation list-exports \
+          --query "Exports [?contains(Name,'${_deployment_environment}-${DYNAMODB_STACK_NAME}-TableName')].Value" \
+          --output text)
+  _sqs_message_queue_name=$(aws --region ${_deployment_region} cloudformation list-exports \
+          --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Name')].Value" \
+          --output text)
+  _sqs_message_queue_arn=$(aws --region ${_deployment_region} cloudformation list-exports \
+          --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Arn')].Value" \
+          --output text)
+
+}
 
 prep_files() {
   echo "Zipping lambda handler modules for deployment."
@@ -60,7 +79,7 @@ prep_files() {
 sam_package() {
   echo "Running SAM CLI Package."
   sam package --template ${SAM_TEMPLATE_DIR}/${SAM_TEMPLATE_FILE} \
-              --s3-bucket ${S3_BUCKET} \
+              --s3-bucket ${S3_BUCKET}-${_deployment_region} \
               --s3-prefix ${S3_PREFIX} \
               --output-template-file ${BUILD_DIR}/${DEPLOYMENT_TEMPLATE_FILE} \
               --region ${_deployment_region} \
@@ -73,7 +92,7 @@ sam_deploy() {
     echo "Running SAM CLI build. Deploying Lambda function with API Gateway..."
     sam deploy --template-file ${BUILD_DIR}/${DEPLOYMENT_TEMPLATE_FILE} \
                --stack-name ${_deployment_environment}-${STACK_NAME} \
-               --s3-bucket ${S3_BUCKET} \
+               --s3-bucket ${S3_BUCKET}-${_deployment_region} \
                --s3-prefix ${S3_PREFIX} \
                --capabilities CAPABILITY_NAMED_IAM \
                --region ${_deployment_region} \
@@ -99,6 +118,8 @@ display_usage() {
     echo "                                              for test environment in us-east-1 region"
     echo "           ./build.sh test va deploy        # Deploy packaged lambda functions(s)"
     echo
+    echo
+    echo "Using exports from default region. These will vary between va and oh"
     echo "Message Queue ARN: "${_sqs_message_queue_arn}
     echo "Message Queue Name: "${_sqs_message_queue_name}
     echo "-----------------------------------------------------------------------"
@@ -160,6 +181,7 @@ set_environment() {
 
 
 deploy_sam_template() {
+    get_exports
     case $1 in
         package)
             prep_files

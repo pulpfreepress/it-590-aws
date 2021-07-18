@@ -53,6 +53,15 @@ Globals:
 
 # Resources
 Resources:
+
+  Account:
+    Type:                          AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn:           !GetAtt
+        - APIGatewayCloudWatchLoggingRole
+        - Arn
+
+
   # Roles
   APIGatewayCloudWatchLoggingRole:
     Type:                          AWS::IAM::Role
@@ -69,12 +78,6 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
 
-  Account:
-    Type:                          AWS::ApiGateway::Account
-    Properties:
-      CloudWatchRoleArn:           !GetAtt
-        - APIGatewayCloudWatchLoggingRole
-        - Arn
 
 
   # Rest API
@@ -140,14 +143,14 @@ Resources:
       StageDescription:
         DataTraceEnabled:          True
         Description:               !Join ['-', [!Ref EnvironmentParameter, !Ref RestAPI, Stage ]]
-        LoggingLevel:              INFO
+        #LoggingLevel:              INFO
         MetricsEnabled:            True
         TracingEnabled:            True
         MethodSettings:
           - HttpMethod:            '*'
             ResourcePath:          '/*'
             DataTraceEnabled:      True
-            LoggingLevel:          INFO
+            #LoggingLevel:          INFO
             MetricsEnabled:        False
         Tags:
           - Key:                   Environment
@@ -172,7 +175,7 @@ Resources:
   LambdaExecutionRole:
     Type:                          AWS::IAM::Role
     Properties:
-      RoleName:                    !Sub "${EnvironmentParameter}-LambdaExecutionRole"
+      RoleName:                    !Sub "${EnvironmentParameter}-${AWS::Region}-LambdaExecutionRole"
       Description:                 Allow Lambda to publish to SNS and push and read SQS message queues
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/AWSLambdaExecute'
@@ -193,7 +196,7 @@ Resources:
   LambdaExecutionPolicy:
     Type:                          AWS::IAM::Policy
     Properties:
-      PolicyName:                  !Join ['-', [!Ref EnvironmentParameter, LambdaExecutionPolicy]]
+      PolicyName:                  !Sub "${EnvironmentParameter}-${AWS::Region}-LambdaExecutionPolicy"
       PolicyDocument:
         Version:                   "2012-10-17"
         Statement:

@@ -131,7 +131,7 @@ Resources:
   LambdaExecutionRole:
     Type:                          AWS::IAM::Role
     Properties:
-      RoleName:                    !Sub "${EnvironmentParameter}-LambdaExecutionRole"
+      RoleName:                    !Sub "${EnvironmentParameter}-${AWS::Region}-LambdaExecutionRole"
       Description:                 Allow Lambda to publish to SNS and SQS
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/AWSLambdaExecute'
@@ -151,7 +151,7 @@ Resources:
   LambdaExecutionPolicy:
     Type:                          AWS::IAM::Policy
     Properties:
-      PolicyName:                  !Join ['-', [!Ref EnvironmentParameter, LambdaExecutionPolicy]]
+      PolicyName:                  !Sub "${EnvironmentParameter}-${AWS::Region}-LambdaExecutionPolicy"
       PolicyDocument:
         Version:                   "2012-10-17"
         Statement:
