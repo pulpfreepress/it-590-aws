@@ -6,6 +6,13 @@ declare -r SAM_TEMPLATE_DIR="sam"
 declare -r SAM_TEMPLATE_FILE="lambda-echo-sqs-dynamodb.yaml"
 # You will need to use a different deployment bucket Name
 # and make sure it exits along with the prefix folder/path
+# NOTE: The _deployment_region variable is appended to the
+#       bucket name making the full bucket name either:
+#             deployment-it590-us-east-1   -or-
+#             deployment-it590-us-east-2
+#
+# A bucket in each region must exist if you wish to deploy
+# the echo message processing pipeline in multiple regions
 declare -r S3_BUCKET="deployment-it590"
 declare -r S3_PREFIX="sam"
 # ********************************************************
