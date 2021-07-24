@@ -33,31 +33,34 @@ def lambda_handler(event, context):
     except Exception as e:
         print("ERROR PARSHING REGEX: " + str(e))
 
+    userAgent = event['requestContext']['identity']['userAgent']
+    print('USER-AGENT: ' + userAgent)
+    # If Amazon-Route53-Health-Check-Service skip sqs and sns
+    if "Amazon-Route53-Health-Check-Service" not in userAgent:
+        # Push message into message queue
+        item = {}
+        try:
+            #item['IpAddress'] = event['headers']['X-Forwarded-For']
+            item['IpAddress'] = ip
+            item['Date'] = event['requestContext']['requestTime']
+            item['Message'] = message
+            response = queue.send_message(MessageBody=json.dumps(item), DelaySeconds=0,)
 
-    # Push message into message queue
-    item = {}
-    try:
-        #item['IpAddress'] = event['headers']['X-Forwarded-For']
-        item['IpAddress'] = ip
-        item['Date'] = event['requestContext']['requestTime']
-        item['Message'] = message
-        response = queue.send_message(MessageBody=json.dumps(item), DelaySeconds=0,)
+        except Exception as e:
+            print("SQS ERROR: " + str(e))
 
-    except Exception as e:
-        print("SQS ERROR: " + str(e))
+        # Publish to Message Topic
+        try:
+            response = client.publish(
+                TargetArn=topic_arn,
+                Message=json.dumps({'default': json.dumps(message)}),
+                MessageStructure='json'
+                )
+            print("SNS Response: " + str(response))
+        except Exception as e:
+            print("SNS ERROR: " + str(e))
 
-    # Publish to Message Topic
-    try:
-        response = client.publish(
-            TargetArn=topic_arn,
-            Message=json.dumps({'default': json.dumps(message)}),
-            MessageStructure='json'
-            )
-        print("SNS Response: " + str(response))
-    except Exception as e:
-        print("SNS ERROR: " + str(e))
-
-    body = "<h1>" + message + "</h1>"
+    body = "<h1>" + message + " : " + json_region + " </h1>"
 
     return {
         "statusCode": 200,
