@@ -33,28 +33,40 @@ declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
 
-# Extract exports and set variables from default region
-declare _dynamodb_table_name=$(aws --region ${_deployment_region} cloudformation list-exports \
-        --query "Exports [?contains(Name,'${_deployment_environment}-${DYNAMODB_STACK_NAME}-TableName')].Value" \
-        --output text)
-declare _sqs_message_queue_name=$(aws --region ${_deployment_region} cloudformation list-exports \
-        --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Name')].Value" \
-        --output text)
-declare _sqs_message_queue_arn=$(aws --region ${_deployment_region} cloudformation list-exports \
-        --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Arn')].Value" \
-        --output text)
+# Declare variables and set in get_exports function
+declare _dynamodb_table_name
+declare _sqs_message_queue_name
+declare _sqs_message_queue_arn
 
 
 get_exports(){
    _dynamodb_table_name=$(aws --region ${_deployment_region} cloudformation list-exports \
           --query "Exports [?contains(Name,'${_deployment_environment}-${DYNAMODB_STACK_NAME}-TableName')].Value" \
           --output text)
+  if [[ -z "$_dynamodb_table_name" ]]; then
+    if [[ "$_deployment_region" == "$REGION_VIRGINIA" ]]; then
+        _dynamodb_table_name=$(aws --region ${REGION_OHIO} cloudformation list-exports \
+             --query "Exports [?contains(Name,'${_deployment_environment}-${DYNAMODB_STACK_NAME}-TableName')].Value" \
+             --output text)
+      else
+        _dynamodb_table_name=$(aws --region ${REGION_VIRGINIA} cloudformation list-exports \
+               --query "Exports [?contains(Name,'${_deployment_environment}-${DYNAMODB_STACK_NAME}-TableName')].Value" \
+               --output text)
+    fi
+  fi
+
   _sqs_message_queue_name=$(aws --region ${_deployment_region} cloudformation list-exports \
           --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Name')].Value" \
           --output text)
   _sqs_message_queue_arn=$(aws --region ${_deployment_region} cloudformation list-exports \
           --query "Exports [?contains(Name,'${_deployment_environment}-${SQS_STACK_NAME}-${DEFAULT_SQS_MESSAGE_QUEUE_NAME}-Arn')].Value" \
           --output text)
+
+  echo "-----------------------------------------------------------------------"
+  echo "Message Queue ARN: "${_sqs_message_queue_arn}
+  echo "Message Queue Name: "${_sqs_message_queue_name}
+  echo "DynamoDB Table Name: "${_dynamodb_table_name}
+  echo "-----------------------------------------------------------------------"
 
 }
 
@@ -112,7 +124,7 @@ sam_deploy() {
 display_usage() {
     echo
     echo "-----------------------------------------------------------------------"
-    echo " Usage: `basename $0` [dev | test | prod] [va | oh] [ package | deploy | package-deploy ] "
+    echo " Usage: `basename $0` [dev | test | prod] [va | oh] [ package | deploy | package-deploy ]"
     echo "                                   "
     echo " Examples: ./build.sh test va package       # Package lambda function(s) and generate template.yaml"
     echo "                                              for test environment in us-east-1 region"
@@ -122,6 +134,7 @@ display_usage() {
     echo "Using exports from default region. These will vary between va and oh"
     echo "Message Queue ARN: "${_sqs_message_queue_arn}
     echo "Message Queue Name: "${_sqs_message_queue_name}
+    echo "DynamoDB Table Name: "${_dynamodb_table_name}
     echo "-----------------------------------------------------------------------"
 }
 
@@ -227,7 +240,7 @@ main() {
     fi
 
 
-    process_arguments $1 $2 $3
+    process_arguments $1 $2 $3 $4
     print_script_complete
 
     exit 1
