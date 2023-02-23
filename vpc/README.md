@@ -4,7 +4,7 @@ Define a VPC with CloudFormation template and deploy via bash script `build.sh`
 
 # Default VPC
 ---------
-All new AWS accounts come with a default VPC in each region. Pictured below is a default VPC in us-east-1. The default VPC in each region contains a subnet in every avaibalility zone. The network access control list allows inbound and outbound traffic from all IPs (0.0.0.0/0), and the default route table enables communication between resources within and between subnets and forwards outbound traffic to the internet gateway.
+All new AWS accounts come with a default VPC in each region. Pictured below is a default VPC in us-east-1. The default VPC in each region contains a subnet in every availability zone. The network access control list allows inbound and outbound traffic from all IPs (0.0.0.0/0), and the default route table enables communication between resources within and between subnets and forwards outbound traffic to the internet gateway.
 <img src="diagrams/vpc/DefaultVPC.png"></img>
 This works fine for simple deployments but for most applications, you need more control over network security and application deployment configurations. That's a job for a custom VPC.
 
