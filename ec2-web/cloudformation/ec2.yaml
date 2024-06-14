@@ -57,9 +57,8 @@ Parameters:
     ConstraintDescription:       Must be a valid IP CIDR range of the form x.x.x.x/x.
 
   LatestAmiIdParameter:
-    Type:                        'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-    Default:                     '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-
+    Type:                        String
+    Default:                     'ami-00beae93a2d981137'
 
 # Rules:
 #   set of rules
@@ -159,9 +158,10 @@ Resources:
       UserData:
         !Base64 |
         #!/bin/bash
-        yum update -y
-        amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
-        yum install -y httpd mariadb-server
+        dnf update -y
+        dnf upgrade --releasever=2023.4.20240611
+        dnf install php
+        dnf install -y httpd
         systemctl start httpd
         systemctl enable httpd
         usermod -a -G apache ec2-user

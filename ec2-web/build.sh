@@ -8,6 +8,7 @@ declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="ec2-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
+declare -r PEM_KEY="ww-dev"
 declare -r VPC_STACK_NAME="vpc-stack"
 
 declare _deployment_region=${REGION_VIRGINIA}
@@ -24,10 +25,10 @@ deploy_ec2() {
         --stack-name ${_deployment_environment}-${STACK_NAME} \
         --capabilities CAPABILITY_NAMED_IAM \
         --parameter-overrides "OwnerParameter=Your Name" \
-                              "KeyNameParameter=it-590-ec2-key" \
+                              "KeyNameParameter=${PEM_KEY}" \
                               "VpcStackNameParameter=${_deployment_environment}-${VPC_STACK_NAME}" \
-                              "EnvironmentParameter=${_deployment_environment}" \
-        --debug
+                              "EnvironmentParameter=${_deployment_environment}" 
+        
 }
 
 
@@ -98,7 +99,7 @@ set_environment() {
 deploy_cloudformation_script() {
     case $1 in
         ec2)
-            validate_template
+            #validate_template
             deploy_ec2
             ;;
 
