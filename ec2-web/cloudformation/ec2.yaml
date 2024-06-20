@@ -158,18 +158,18 @@ Resources:
       UserData:
         !Base64 |
         #!/bin/bash
-        dnf update -y
-        dnf upgrade --releasever=2023.4.20240611
-        dnf install php
-        dnf install -y httpd
-        systemctl start httpd
-        systemctl enable httpd
-        usermod -a -G apache ec2-user
-        chown -R ec2-user:apache /var/www
-        chmod 2775 /var/www
-        find /var/www -type d -exec chmod 2775 {} \;
-        find /var/www -type f -exec chmod 0664 {} \;
-        echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
+        sudo dnf update -y
+        sudo dnf upgrade --releasever=2023.4.20240611
+        sudo dnf install -y php
+        sudo dnf install -y httpd
+        sudo systemctl start httpd
+        sudo systemctl enable httpd
+        sudo usermod -a -G apache ec2-user
+        sudo chown -R ec2-user:apache /var/www
+        sudo chmod 2775 /var/www
+        sudo find /var/www -type d -exec chmod 2775 {} \;
+        sudo find /var/www -type f -exec chmod 0664 {} \;
+        sudo echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
       Tags:
         - Key:                   Environment
           Value:                 !Ref EnvironmentParameter
