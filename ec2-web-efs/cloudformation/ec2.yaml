@@ -66,8 +66,8 @@ Parameters:
     ConstraintDescription:       Must be a valid IP CIDR range of the form x.x.x.x/x.
 
   LatestAmiIdParameter:
-    Type:                        'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-    Default:                     '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+    Type:                        String
+    Default:                     'ami-00beae93a2d981137'
 
 
 
@@ -178,16 +178,11 @@ Resources:
           !Sub |
           #!/bin/bash
           exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-          yum update -y
-          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
-          yum install php-mbstring php-xml -y
-          #sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
-          sudo yum install -y mysql-community-client
+          dnf update -y
+          dnf upgrade -y --releasever=2023.5.20240624
+          dnf install -y php
+          dnf install -y httpd
 
-          yum install -y httpd mariadb-server
-
-          systemctl start mariadb
-          sudo systemctl enable mariadb
           mkdir /webshare
           mkdir /webshare/www
           mkdir /webshare/www/html
@@ -195,11 +190,11 @@ Resources:
           sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
           systemctl start httpd
           systemctl enable httpd
-          yum install -y mod_ssl
-          cd /etc/pki/tls/certs
-          ./make-dummy-cert localhost.crt
-          cd
-          sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
+          # dnf install -y mod_ssl
+          # cd /etc/pki/tls/certs
+          # ./make-dummy-cert localhost.crt
+          # cd
+          # sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
           usermod -a -G apache ec2-user
           chown -R ec2-user:apache /webshare/www/html
           chmod 2775 /webshare/www/html
@@ -208,13 +203,14 @@ Resources:
           if [ ! -f /webshare/www/html/phpinfo.php ]; then
             echo "<?php phpinfo(); ?>" > /webshare/www/html/phpinfo.php
           fi
+
           # Install PHPMyAdmin
-          cd /webshare/www/html
-          wget https://files.phpmyadmin.net/phpMyAdmin/5.1.1/phpMyAdmin-5.1.1-english.tar.gz
-          mkdir phpMyAdmin && tar -xvzf phpMyAdmin-5.1.1-english.tar.gz -C phpMyAdmin --strip-components 1
-          rm phpMyAdmin-5.1.1-english.tar.gz
-          systemctl restart httpd
-          systemctl restart php-fpm
+          #cd /webshare/www/html
+          #wget https://files.phpmyadmin.net/phpMyAdmin/5.1.1/phpMyAdmin-5.1.1-english.tar.gz
+          #mkdir phpMyAdmin && tar -xvzf phpMyAdmin-5.1.1-english.tar.gz -C phpMyAdmin --strip-components 1
+          #rm phpMyAdmin-5.1.1-english.tar.gz
+          #systemctl restart httpd
+          #systemctl restart php-fpm
 
       Tags:
         - Key:                   Environment
@@ -240,12 +236,11 @@ Resources:
           !Sub |
           #!/bin/bash
           exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-          yum update -y
-          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
-          yum install php-mbstring php-xml -y
-          #sudo yum install -y https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
-          sudo yum install -y mysql-community-client
-          yum install -y httpd
+          dnf update -y
+          dnf upgrade -y --releasever=2023.5.20240624
+          dnf install -y php
+          dnf install -y httpd
+
           mkdir /webshare
           mkdir /webshare/www
           mkdir /webshare/www/html
@@ -253,6 +248,11 @@ Resources:
           sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
           systemctl start httpd
           systemctl enable httpd
+          # dnf install -y mod_ssl
+          # cd /etc/pki/tls/certs
+          # ./make-dummy-cert localhost.crt
+          # cd
+          # sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
           usermod -a -G apache ec2-user
           chown -R ec2-user:apache /webshare/www/html
           chmod 2775 /webshare/www/html
@@ -261,6 +261,10 @@ Resources:
           if [ ! -f /webshare/www/html/phpinfo.php ]; then
             echo "<?php phpinfo(); ?>" > /webshare/www/html/phpinfo.php
           fi
+
+          #systemctl restart httpd
+
+          
 
       Tags:
         - Key:                   Environment

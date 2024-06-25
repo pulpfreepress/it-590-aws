@@ -26,8 +26,7 @@ deploy_vpc() {
         --capabilities CAPABILITY_IAM \
         --parameter-overrides "OwnerParameter=${STACK_OWNER}" \
                               "VpcNameParameter=${_deployment_environment}-VPC" \
-                              "EnvironmentParameter=${_deployment_environment}" \
-        --debug
+                              "EnvironmentParameter=${_deployment_environment}" 
 }
 
 

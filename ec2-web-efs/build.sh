@@ -8,28 +8,32 @@ declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="ec2-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
+# IMPORTANT: You need to change ww-dev to your account PEM Key name
+declare -r PEM_KEY="ww-dev"
 declare -r VPC_STACK_NAME="vpc-stack"
 declare -r EFS_STACK_NAME="efs-stack"
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
-declare _efs_web_file_share=$(aws cloudformation list-exports --query "Exports [?contains(Name,'${_deployment_environment}-${EFS_STACK_NAME}-WebFileShare')].Value" --output text)
+#declare _efs_web_file_share=$(aws cloudformation list-exports --region ${_deployment_region} --query "Exports [?contains(Name,'${_deployment_environment}-${EFS_STACK_NAME}-WebFileShare')].Value" --output text)
 
 
 
 deploy_ec2() {
     echo "Deploying EC2 instances..."
+    _efs_web_file_share=$(aws cloudformation list-exports --region ${_deployment_region} --query "Exports [?contains(Name,'${_deployment_environment}-${EFS_STACK_NAME}-WebFileShare')].Value" --output text)
+
     aws --region ${_deployment_region} cloudformation deploy \
         --template-file ${CLOUDFORMATION_DIR}/${EC2_CF_TEMPLATE_FILE} \
         --stack-name ${_deployment_environment}-${STACK_NAME} \
         --capabilities CAPABILITY_NAMED_IAM \
         --parameter-overrides "OwnerParameter=Your Name" \
-                              "KeyNameParameter=it-590-ec2-key" \
+                              "KeyNameParameter=${PEM_KEY}" \
                               "VpcStackNameParameter=${_deployment_environment}-${VPC_STACK_NAME}" \
                               "EnvironmentParameter=${_deployment_environment}" \
-                              "EFSWebFileShareParameter=${_efs_web_file_share}" \
-        --debug
+                              "EFSWebFileShareParameter=${_efs_web_file_share}" 
+
 }
 
 
@@ -102,7 +106,7 @@ set_environment() {
 deploy_cloudformation_script() {
     case $1 in
         ec2)
-            validate_template
+            #validate_template
             deploy_ec2
             ;;
 

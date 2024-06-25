@@ -10,6 +10,8 @@ declare -r STACK_NAME="ec2-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
 declare -r VPC_STACK_NAME="vpc-stack"
 declare -r EFS_STACK_NAME="efs-stack"
+# IMPORTANT: You need to change ww-dev to your account PEM Key name
+declare -r PEM_KEY="ww-dev"
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
@@ -25,7 +27,7 @@ deploy_ec2() {
         --stack-name ${_deployment_environment}-${STACK_NAME} \
         --capabilities CAPABILITY_NAMED_IAM \
         --parameter-overrides "OwnerParameter=Your Name" \
-                              "KeyNameParameter=it-590-ec2-key" \
+                              "KeyNameParameter=${PEM_KEY}" \
                               "VpcStackNameParameter=${_deployment_environment}-${VPC_STACK_NAME}" \
                               "EnvironmentParameter=${_deployment_environment}" \
                               "EFSWebFileShareParameter=${_efs_web_file_share}" \

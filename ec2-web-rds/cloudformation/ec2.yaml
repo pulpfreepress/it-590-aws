@@ -66,8 +66,8 @@ Parameters:
     ConstraintDescription:       Must be a valid IP CIDR range of the form x.x.x.x/x.
 
   LatestAmiIdParameter:
-    Type:                        'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-    Default:                     '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+    Type:                        String
+    Default:                     'ami-00beae93a2d981137'
 
 
 

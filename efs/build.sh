@@ -9,6 +9,9 @@ declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="efs-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
 declare -r VPC_STACK_NAME="vpc-stack"
+# Change Rick Miller to your name...
+declare -r STACK_OWNER="Rick Miller"
+
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
@@ -23,10 +26,9 @@ deploy_efs() {
         --template-file ${CLOUDFORMATION_DIR}/${EFS_CF_TEMPLATE_FILE} \
         --stack-name ${_deployment_environment}-${STACK_NAME} \
         --capabilities CAPABILITY_NAMED_IAM \
-        --parameter-overrides "OwnerParameter=Your Name" \
+        --parameter-overrides "OwnerParameter=${STACK_OWNER}" \
                               "VpcStackNameParameter=${_deployment_environment}-${VPC_STACK_NAME}" \
-                              "EnvironmentParameter=${_deployment_environment}" \
-        --debug
+                              "EnvironmentParameter=${_deployment_environment}" 
 }
 
 
