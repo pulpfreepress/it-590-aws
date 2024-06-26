@@ -180,20 +180,22 @@ Resources:
           exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
           dnf update -y
           dnf upgrade -y --releasever=2023.5.20240624
-          dnf install -y php
-          dnf install -y httpd
+          dnf install -y httpd wget php-fpm php-mysqli php-json php php-devel
+          dnf install -y php-mbstring php-xml
+          systemctl restart php-fpm
+
+          dnf install -y mariadb105-server
 
           mkdir /webshare
           mkdir /webshare/www
           mkdir /webshare/www/html
           mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebFileShareParameter}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html
           sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
+          dnf install -y mod_ssl
+
           systemctl start httpd
           systemctl enable httpd
-          # dnf install -y mod_ssl
-          # cd /etc/pki/tls/certs
-          # ./make-dummy-cert localhost.crt
-          # cd
+          
           # sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
           usermod -a -G apache ec2-user
           chown -R ec2-user:apache /webshare/www/html
@@ -204,13 +206,14 @@ Resources:
             echo "<?php phpinfo(); ?>" > /webshare/www/html/phpinfo.php
           fi
 
+    
+
           # Install PHPMyAdmin
-          #cd /webshare/www/html
-          #wget https://files.phpmyadmin.net/phpMyAdmin/5.1.1/phpMyAdmin-5.1.1-english.tar.gz
-          #mkdir phpMyAdmin && tar -xvzf phpMyAdmin-5.1.1-english.tar.gz -C phpMyAdmin --strip-components 1
-          #rm phpMyAdmin-5.1.1-english.tar.gz
-          #systemctl restart httpd
-          #systemctl restart php-fpm
+          cd /webshare/www/html
+          wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-english.tar.gz
+          mkdir phpMyAdmin && tar -xvzf phpMyAdmin-5.2.1-english.tar.gz -C phpMyAdmin --strip-components 1
+          rm -f phpMyAdmin-5.2.1-english.tar.gz
+          
 
       Tags:
         - Key:                   Environment
@@ -238,20 +241,22 @@ Resources:
           exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
           dnf update -y
           dnf upgrade -y --releasever=2023.5.20240624
-          dnf install -y php
-          dnf install -y httpd
+          dnf install -y httpd wget php-fpm php-mysqli php-json php php-devel
+          dnf install -y php-mbstring php-xml
+          systemctl restart php-fpm
+
+          dnf install -y mariadb105-server
 
           mkdir /webshare
           mkdir /webshare/www
           mkdir /webshare/www/html
           mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSWebFileShareParameter}.efs.${AWS::Region}.amazonaws.com:/ /webshare/www/html
           sed -i "s,/var/www/html,/webshare/www/html,g" /etc/httpd/conf/httpd.conf
+          dnf install -y mod_ssl
+          
           systemctl start httpd
           systemctl enable httpd
-          # dnf install -y mod_ssl
-          # cd /etc/pki/tls/certs
-          # ./make-dummy-cert localhost.crt
-          # cd
+          
           # sed -e '/SSLCertificateKeyFile/s/^/#/g' -i /etc/httpd/conf.d/ssl.conf
           usermod -a -G apache ec2-user
           chown -R ec2-user:apache /webshare/www/html
@@ -261,8 +266,6 @@ Resources:
           if [ ! -f /webshare/www/html/phpinfo.php ]; then
             echo "<?php phpinfo(); ?>" > /webshare/www/html/phpinfo.php
           fi
-
-          #systemctl restart httpd
 
           
 
