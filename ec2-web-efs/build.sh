@@ -16,9 +16,6 @@ declare -r EFS_STACK_NAME="efs-stack"
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
-#declare _efs_web_file_share=$(aws cloudformation list-exports --region ${_deployment_region} --query "Exports [?contains(Name,'${_deployment_environment}-${EFS_STACK_NAME}-WebFileShare')].Value" --output text)
-
-
 
 deploy_ec2() {
     echo "Deploying EC2 instances..."
