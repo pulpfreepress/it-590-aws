@@ -19,6 +19,8 @@ declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
 
 deploy_ec2() {
     echo "Deploying EC2 instances..."
+
+    # Get reference to efs from exports
     _efs_web_file_share=$(aws cloudformation list-exports --region ${_deployment_region} --query "Exports [?contains(Name,'${_deployment_environment}-${EFS_STACK_NAME}-WebFileShare')].Value" --output text)
 
     aws --region ${_deployment_region} cloudformation deploy \
