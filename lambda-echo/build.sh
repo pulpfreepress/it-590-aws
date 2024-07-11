@@ -6,7 +6,7 @@ declare -r SAM_TEMPLATE_DIR="sam"
 declare -r SAM_TEMPLATE_FILE="lambda-echo.yaml"
 # You will need to use a different deployment bucket Name
 # and make sure it exits along with the prefix folder/path
-declare -r S3_BUCKET="deployment-it590-us-east-2"
+declare -r S3_BUCKET="deployment-wwdev-us-east-1"
 declare -r S3_PREFIX="sam"
 # ********************************************************
 declare -r BUILD_DIR="build"
@@ -15,9 +15,7 @@ declare -r REGION_VIRGINIA="us-east-1"
 declare -r REGION_OHIO="us-east-2"
 declare -r STACK_NAME="lambda-echo-stack"
 declare -r DEPLOYMENT_ENVIRONMENT="dev"
-declare -r VPC_STACK_NAME="vpc-stack"
-declare -r EFS_STACK_NAME="efs-stack"
-declare -r POC_NAME="YourName"
+declare -r POC_NAME="Rick Miller"
 
 declare _deployment_region=${REGION_VIRGINIA}
 declare _deployment_environment=${DEPLOYMENT_ENVIRONMENT}
@@ -45,8 +43,8 @@ sam_package() {
               --s3-bucket ${S3_BUCKET} \
               --s3-prefix ${S3_PREFIX} \
               --output-template-file ${BUILD_DIR}/${DEPLOYMENT_TEMPLATE_FILE} \
-              --region ${_deployment_region} \
-              --debug
+              --region ${_deployment_region} 
+              
 
 }
 
@@ -62,9 +60,8 @@ sam_deploy() {
                --confirm-changeset \
                --parameter-overrides "EnvironmentParameter=${_deployment_environment}" \
                                      "POCNameParameter=${POC_NAME}" \
-              --force-upload \
-              --debug
-
+              --force-upload
+              
 }
 
 

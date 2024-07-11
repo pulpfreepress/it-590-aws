@@ -26,8 +26,7 @@ deploy_sqs() {
         --capabilities CAPABILITY_IAM \
         --parameter-overrides "POCNameParameter=${POC_NAME}" \
                               "EnvironmentParameter=${_deployment_environment}" \
-                              "QueueNameParameter=${DEFAULT_QUEUE_NAME}" \
-        --debug
+                              "QueueNameParameter=${DEFAULT_QUEUE_NAME}" 
 }
 
 
