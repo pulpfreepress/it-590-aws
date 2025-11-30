@@ -1,6 +1,6 @@
 # it-590-aws
 
-Collection of example CloudFormation templates, bash shell scripts, and Python code. To run these examples on Windows machines, install <a href="https://git-scm.com/downloads">git</a> with git-bash window.  
+Collection of example CloudFormation templates, bash shell scripts, and Python code. To run these examples on Windows machines, install <a href="https://git-scm.com/downloads">git</a> with git-bash terminal.  
 
 **NOTE:** I welcome suggestions for examples and pull requests.
 Also, many of these examples depend on and reference resources located in other stacks that are assumed to be deployed. (Cross-Stack References) See the **Depends on** for each repo sub-project below.
