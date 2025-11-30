@@ -1,6 +1,6 @@
 # it-590-aws
 
-Collection of example CloudFormation templates, bash shell scripts, and Python code. To run these examples on Windows machines, install <a href="https://git-scm.com/downloads">git</a> with bash window.  
+Collection of example CloudFormation templates, bash shell scripts, and Python code. To run these examples on Windows machines, install <a href="https://git-scm.com/downloads">git</a> with git-bash window.  
 
 **NOTE:** I welcome suggestions for examples and pull requests.
 Also, many of these examples depend on and reference resources located in other stacks that are assumed to be deployed. (Cross-Stack References) See the **Depends on** for each repo sub-project below.
@@ -58,7 +58,7 @@ Also, many of these examples depend on and reference resources located in other 
 
 ## DynamoDB Global Table
 <a href="dynamodb-global-table">dynamodb-global-table</a></br>
-**NOTE:** Deploy this is you want multi-region replication for highly-available (HA) <a href="dynamodb-global-table">Lambda Echo SQS DynamoDB</a> pipelines in multiple regions
+**NOTE:** Deploy this if you want multi-region replication for highly-available (HA) <a href="dynamodb-global-table">Lambda Echo SQS DynamoDB</a> pipelines in multiple regions.
 
 ## Lambda Echo with SQS, SNS, and DynamoDB
 
